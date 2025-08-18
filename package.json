@@ -1,0 +1,45 @@
+{
+    "name": "@components-1812/svg-isolate",
+    "description": "Custom SVG Isolate element",
+    "keywords": [
+        "web-components",
+        "web-components-library",
+        "svg",
+        "svg-isolate",
+        "custom-svg-isolate"
+    ],
+    "author": "Franco Javier Gadea",
+    "license": "MIT",
+    "version": "0.0.1",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/components-1812/svg-isolate"
+    },
+    "type": "module",
+    "exports": {
+        ".": "./src/index.js",
+        "./index": "./src/index.js",
+        "./index.js": "./src/index.js",
+        "./SVGIsolate": "./src/SVGIsolate.js",
+        "./SVGIsolate.js": "./src/SVGIsolate.js",
+        "./SVGIsolate.css": "./src/SVGIsolate.css",
+        "./define": "./src/define.js",
+        "./define.js": "./src/define.js",
+        "./assets/*": "./src/assets/*",
+        "./src/*": "./src/*",
+        "./dist/*": "./dist/*"
+    },
+    "files": [
+        "src/*",
+        "dist/*",
+        "src/assets/preview.webp"
+    ],
+    "main": "./src/SVGIsolate.js",
+    "style": "./src/SVGIsolate.css",
+    "devDependencies": {
+        "esbuild": "^0.25.9"
+    },
+    "scripts": {
+        "build": "node build.js"
+    }
+}
