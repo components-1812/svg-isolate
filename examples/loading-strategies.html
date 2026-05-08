@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVGIsolate Loading Strategies</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        :root {
+            color-scheme: dark;
+        }
+        body {
+            padding: 50px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        svg-isolate {
+            width: 200px;
+            height: 200px;
+            outline: 1px dashed gray;
+            overflow: auto;
+        }
+
+        .scrollable {
+            width: 300px;
+            height: 200px;
+            outline: 1px dashed rgba(9, 89, 209, 1);
+            overflow: auto;
+        }
+        .scrollable p { 
+            height: 500px;
+        }
+    </style>
+</head>
+<body>
+    <svg-isolate src="/assets/circle.svg"></svg-isolate>
+
+    <svg-isolate src="/assets/triangle.svg" loading="defer"></svg-isolate>
+
+    <svg-isolate src="/assets/hexagon.svg" loading="idle"></svg-isolate>
+
+    <div class="scrollable">
+        <p></p>
+        <svg-isolate src="/assets/heart.svg" loading="lazy"></svg-isolate>
+    </div>
+
+    <script type="module">
+        import SVGIsolate from '/src/SVGIsolate.js';
+
+        SVGIsolate.define(null);
+    </script>
+
+</body>
+</html>

@@ -1,13 +1,7 @@
 # SVG Isolate Custom Element
 
-![preview](./assets/preview.webp)
-> In this example we have 4 svg: `circle.svg`, `triangle.svg`, `hexagon.svg` and `heart.svg` 
->
-> Each one is using the same clipPath id `id="clipPath"` and this generates a conflict in the **light DOM**. 
->
-> But using the `<custom-svg-isolate>` wrapper we can isolate the svg in **shadow DOM** and avoid ids and classes conflicts.
+![Id collision example](./assets/id-collision.webp)
 
-<br>
 
 ## Examples
 
@@ -31,31 +25,29 @@ npm install @components-1812/svg-isolate
 
 ```html
 <script type="module">
-    import SVGIsolate from "https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.1/src/SVGIsolate.min.js";
+    import SVGIsolate from "https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2/src/SVGIsolate.min.js";
 
-    //Add the stylesheets to the component
-    SVGIsolate.stylesSheets.links.push("https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.1/src/SVGIsolate.min.css");
+    const tagName = null;
 
-    console.log(SVGIsolate);
-
-    //Define the component
-    customElements.define('custom-svg-isolate', SVGIsolate);
+    SVGIsolate.define(tagName, {
+        links: ["https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2/src/SVGIsolate.min.css"]
+    });
 </script>
 ```
 
 - **jsdelivr**: [`SVG Isolate package`](https://www.jsdelivr.com/package/npm/@components-1812/svg-isolate)
-[`SVGIsolate.js`](https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.1/src/SVGIsolate.min.js)
-[`SVGIsolate.css`](https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.1/src/SVGIsolate.min.css)
+[`SVGIsolate.js`](https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2/src/SVGIsolate.min.js)
+[`SVGIsolate.css`](https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2/src/SVGIsolate.min.css)
 
 - **unpkg**: [`SVG Isolate package`](https://app.unpkg.com/@components-1812/svg-isolate)
-[`SVGIsolate.js`](https://unpkg.com/@components-1812/svg-isolate@0.0.1/src/SVGIsolate.js)
-[`SVGIsolate.css`](https://unpkg.com/@components-1812/svg-isolate@0.0.1/src/SVGIsolate.css)
+[`SVGIsolate.js`](https://unpkg.com/@components-1812/svg-isolate@0.0.2/src/SVGIsolate.js)
+[`SVGIsolate.css`](https://unpkg.com/@components-1812/svg-isolate@0.0.2/src/SVGIsolate.css)
 
 <br>
 
 ## Usage
 
-If you use Vite or a framework based on Vite such as Astro, you can import the component in a client-side script file:
+If you use `Vite` or a framework based on `Vite` such as `Astro`, you can import the component in a **client-side** script file:
 
 ```js
 import '@components-1812/svg-isolate';
@@ -64,16 +56,16 @@ import '@components-1812/svg-isolate';
 and use it in your HTML:
 
 ```html
-<custom-svg-isolate>
+<svg-isolate>
     <svg width="200" height="200"><!-- SVG content --></svg>
-</custom-svg-isolate>
+</svg-isolate>
 
-<custom-svg-isolate src="path/tocircle.svg"></custom-svg-isolate>
+<svg-isolate src="path/to/circle.svg"></svg-isolate>
 ```
 
 > **Note:**
 > 
-> If you are using a builder or framework that doesn't support import ?raw, you need to load the component and its stylesheets manually.
+> If you are using a builder or framework that doesn't support `import ?raw`, you need to load the component and its stylesheets manually.
 > 
 > see [Adding CSS stylesheets manually](#adding-css-stylesheets-manually)
 
@@ -93,11 +85,7 @@ If you want to add custom stylesheets to the component or need to load styleshee
     const SVGIsolateCSS = new CSSStyleSheet();
     SVGIsolateCSS.replaceSync(SVGIsolateRawCSS);
 
-    //Add the stylesheets to the component
-    SVGIsolate.stylesSheets.adopted.push(SVGIsolateCSS);
-
-    //Define the component
-    import('@components-1812/svg-isolate/define');
+    SVGIsolate.define(null, { adopted: [SVGIsolateCSS] });
     ```
 
 <br>
@@ -108,11 +96,7 @@ If you want to add custom stylesheets to the component or need to load styleshee
     import { SVGIsolate } from '@components-1812/svg-isolate/SVGIsolate.js';
     import SVGIsolateRawCSS from '@components-1812/svg-isolate/SVGIsolate.css?raw';
 
-    //Add the stylesheets to the component
-    SVGIsolate.stylesSheets.raw.push(SVGIsolateRawCSS);
-
-    //Define the component
-    import('@components-1812/svg-isolate/define');
+    SVGIsolate.define(null, { raw: [SVGIsolateRawCSS] });
     ```
 
 <br>
@@ -123,18 +107,9 @@ If you want to add custom stylesheets to the component or need to load styleshee
     import { SVGIsolate } from '@components-1812/svg-isolate/SVGIsolate.js';
     import SVGIsolateUrl from '@components-1812/svg-isolate/SVGIsolate.css?url';
 
-    //Add the stylesheets to the component
-    SVGIsolate.stylesSheets.links.push(SVGIsolateUrl);
-
-    //Define the component
-    import('@components-1812/svg-isolate/define');
+    SVGIsolate.define(null, { links: [SVGIsolateUrl] });
     ```
 
-<br>
-
-> **Note:**
-> 
-> `import('@components-1812/svg-isolate/define')` calls `customElements.define('custom-svg-isolate', SVGIsolate);` in `define.js`
 
 <br>
 
@@ -147,9 +122,9 @@ If you want to add custom stylesheets to the component or need to load styleshee
     At init time, if the `src` attribute is not set, the svg in the light DOM is used.
 
     ```html
-    <custom-svg-isolate>
+    <svg-isolate>
         <svg width="200" height="200"><!-- SVG content --></svg>
-    </custom-svg-isolate>
+    </svg-isolate>
     ```
 
 <br>

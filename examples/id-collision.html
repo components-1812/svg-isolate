@@ -3,15 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SVG Isolate Example</title>
+    <title>SVG Isolate ID Collision Example</title>
 
     <style>
-        body, html {
+        * {
             margin: 0;
             padding: 0;
-            width: 100%;
+        }
+        :root {
+            color-scheme: dark;
+        }
+        body {
+            padding-block: 50px;
             height: 100%;
-            background-color: #222;
         }
         section {
             display: flex;
@@ -21,16 +25,31 @@
         }
         h2 {
             text-align: center;
-            font-family: sans-serif;
-            font-size: 18pt;
-            color: #fff;
+            font-family: monospace;
+            font-size: 20pt;
             letter-spacing: 2px;
+        }
+        p {
+            font-family: monospace;
+            font-size: 16pt;
+            max-width: 90ch;
+            margin: 10px auto;
+        }
+        span {
+            color: #9f9;
+        }
+        a {
+            color: #9ff;
+            text-decoration: none;
+        }
+        b {
+            color: #ff9;
         }
     </style>
 </head>
 <body>
-    
-    <h2>In light DOM with conflicts ID for clipPath</h2>
+
+    <h2>Light DOM: <span>clipPath</span> ID collision issue</h2>
 
     <section>
 
@@ -48,45 +67,46 @@
 
     </section>
 
-
-    <h2>In shadow DOM using custom-svg-isolate wrapper</h2>
+    <h2>Shadow DOM: isolated SVG with <span>&lt;svg-isolate&gt;</span></h2>
 
     <section>
 
-        
         <!-- Circle -->
-        <custom-svg-isolate>
+        <svg-isolate>
             <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="clipPath"><circle cx="100" cy="100" r="50" /></clipPath></defs><rect x="0" y="0" width="200" height="200" fill="red" stroke="none" clip-path="url(#clipPath)" /></svg>
-        </custom-svg-isolate>
+        </svg-isolate>
 
         <!-- Triangle -->
-        <custom-svg-isolate>
+        <svg-isolate>
             <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="clipPath"><polygon points="100,50 150,150 50,150"/></clipPath></defs><rect x="0" y="0" width="200" height="200" fill="red" stroke="none" clip-path="url(#clipPath)" /></svg>
-        </custom-svg-isolate>
+        </svg-isolate>
 
         <!-- Hexagon -->
-        <custom-svg-isolate>
+        <svg-isolate>
             <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="clipPath"><polygon points="100,50 150,75 150,125 100,150 50,125 50,75" /></clipPath></defs><rect x="0" y="0" width="200" height="200" fill="red" stroke="none" clip-path="url(#clipPath)" /></svg>
-        </custom-svg-isolate>
+        </svg-isolate>
 
         <!-- Heart -->
-        <custom-svg-isolate>
+        <svg-isolate>
             <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="clipPath"><path d="M100 170 L30 90 A35 35 0 1 1 100 60 A35 35 0 1 1 170 90 Z"/></clipPath></defs><rect x="0" y="0" width="200" height="200" fill="red" stroke="none" clip-path="url(#clipPath)" /></svg>
-        </custom-svg-isolate>
+        </svg-isolate>
 
     </section>
 
+    <p>
+        The following SVG elements (<a href="/assets/circle.svg">circle.svg</a>, <a href="/assets/triangle.svg">triangle.svg</a>, <a href="/assets/hexagon.svg">hexagon.svg</a>, <a href="/assets/heart.svg">heart.svg</a>) all use the same <span>clipPath</span> id (id="clipPath"), which causes conflicts in the <b>Light DOM</b> when multiple instances are rendered on the same page.
+    </p>
+    <p>
+        By wrapping them with <span>&lt;svg-isolate&gt;</span>, each SVG is rendered inside its own <b>Shadow DOM</b>, preventing ID and class collisions and ensuring complete style and definition isolation.
+    </p>
+
     <script type="module">
 
-        import SVGIsolate from "https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.1/src/SVGIsolate.min.js";
+        import SVGIsolate from "/src/SVGIsolate.js";
 
-        //Add the stylesheets to the component
-        SVGIsolate.stylesSheets.links.push("https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.1/src/SVGIsolate.min.css");
-
-        console.log(SVGIsolate);
-
-        //Define the component
-        customElements.define('custom-svg-isolate', SVGIsolate);
+        SVGIsolate.define(null, {
+            links: ['/src/SVGIsolate.css']
+        });
     </script>
 </body>
 </html>
