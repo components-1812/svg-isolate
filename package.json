@@ -1,12 +1,11 @@
 {
     "name": "@components-1812/svg-isolate",
-    "description": "Custom SVG Isolate element",
+    "description": "Web Component for isolated SVG rendering with ID conflict prevention, responsive srcset, smart caching, and lazy/defer/idle loading strategies.",
     "keywords": [
-        "web-components",
-        "web-components-library",
-        "svg",
-        "svg-isolate",
-        "custom-svg-isolate"
+        "svg", "web-component", "custom-element",
+        "svg-loader", "svg-component", "svg-isolate", "svg-srcset",
+        "responsive-svg", "lazy-loading", "defer-loading", "idle-loading", "svg-cache",
+        "shadow-dom", "frontend", "ui"
     ],
     "author": "Franco Javier Gadea",
     "license": "MIT",
@@ -17,25 +16,24 @@
     },
     "type": "module",
     "exports": {
-        ".": "./src/index.js",
-        "./index": "./src/index.js",
-        "./index.js": "./src/index.js",
-        "./SVGIsolate": "./src/SVGIsolate.js",
-        "./SVGIsolate.js": "./src/SVGIsolate.js",
-        "./SVGIsolate.css": "./src/SVGIsolate.css",
-        "./define": "./src/define.js",
-        "./define.js": "./src/define.js",
-        "./assets/*": "./src/assets/*",
-        "./src/*": "./src/*",
+        ".": "./dist/index.bundle.js",
+        "./bundle.js": "./dist/index.bundle.js",
+        "./bundle.min.js": "./dist/index.bundle.min.js",
+
+        "./SVGIsolate.js": "./dist/SVGIsolate.js",
+        "./SVGIsolate.css": "./dist/SVGIsolate.css",
+
+        "./SVGIsolate.min.js": "./dist/SVGIsolate.min.js",
+        "./SVGIsolate.min.css": "./dist/SVGIsolate.min.css",
+
         "./dist/*": "./dist/*"
     },
     "files": [
-        "src/*",
-        "dist/*",
-        "src/assets/preview.webp"
+        "dist",
+        "assets/*.webp"
     ],
-    "main": "./src/SVGIsolate.js",
-    "style": "./src/SVGIsolate.css",
+    "main": "./dist/SVGIsolate.js",
+    "style": "./dist/SVGIsolate.css",
     "devDependencies": {
         "esbuild": "^0.25.9"
     },

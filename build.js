@@ -5,53 +5,88 @@ import fs from "node:fs";
 const SOURCE = path.resolve(import.meta.dirname, 'src');
 const OUTPUT = path.resolve(import.meta.dirname, 'dist');
 
+
+const sharedOptions = {
+    target: 'esnext',
+    sourcemap: false,
+    format: 'esm',
+    platform: 'browser',
+};
+
+const files = ['SVGIsolateBase', 'SVGIsolateCache', 'SVGIsolate'];
+
 const BUILD_ENTRIES = [
-    {   
+   {
+        name: 'SVGIsolate.js',
+        options: {
+            ...sharedOptions,
+            entryPoints: [path.join(SOURCE, 'SVGIsolate.js')],
+            bundle: true,         // absorbe Base y Cache
+            minify: false,
+            outfile: path.join(OUTPUT, 'SVGIsolate.js'),
+            plugins: [rawCSSPlugin()]
+        }
+    },
+    {
         name: 'SVGIsolate.min.js',
         options: {
+            ...sharedOptions,
             entryPoints: [path.join(SOURCE, 'SVGIsolate.js')],
+            bundle: true,
             minify: true,
-            sourcemap: false,
-            target: 'esnext',
             outfile: path.join(OUTPUT, 'SVGIsolate.min.js'),
+            plugins: [rawCSSPlugin()]
+        }
+    },
+
+    //MARK: CSS
+    {
+        name: 'SVGIsolate.css',
+        options: { 
+            entryPoints: [path.join(SOURCE, 'SVGIsolate.css')], 
+            minify: false, 
+            outfile: path.join(OUTPUT, 'SVGIsolate.css') 
         }
     },
     {
         name: 'SVGIsolate.min.css',
-        options: {
-            entryPoints: [path.join(SOURCE, 'SVGIsolate.css')],
-            minify: true,
-            outfile: path.join(OUTPUT, 'SVGIsolate.min.css'),
+        options: { 
+            entryPoints: [path.join(SOURCE, 'SVGIsolate.css')], 
+            minify: true, 
+            outfile: path.join(OUTPUT, 'SVGIsolate.min.css') 
         }
     },
-    {   
-        name: 'index.js',
-        options: {
-            entryPoints: [path.join(SOURCE, 'index.js')],
-            bundle: true,
-            minify: true,
-            sourcemap: false,
-            target: 'esnext',
-            outfile: path.join(OUTPUT, 'index.min.js'),
-            plugins: [rawCSSPlugin()]
+
+    //MARK: bundle — todo incluido + CSS inline
+    {
+        name: 'index.bundle.js',
+        options: { 
+            ...sharedOptions, 
+            entryPoints: [path.join(SOURCE, 'index.js')], 
+            bundle: true, 
+            minify: false, 
+            outfile: path.join(OUTPUT, 'index.bundle.js'), 
+            plugins: [rawCSSPlugin()] 
         }
     },
-    {   
-        name: 'define.js',
-        options: {
-            entryPoints: [path.join(SOURCE, 'define.js')],
-            minify: true,
-            sourcemap: false,
-            target: 'esnext',
-            outfile: path.join(OUTPUT, 'define.min.js'),
+    {
+        name: 'index.bundle.min.js',
+        options: { 
+            ...sharedOptions, 
+            entryPoints: [path.join(SOURCE, 'index.js')], 
+            bundle: true, 
+            minify: true, 
+            outfile: path.join(OUTPUT, 'index.bundle.min.js'), 
+            plugins: [rawCSSPlugin()] 
         }
     },
-];
+]
+
 
 // Asegurarse de que dist exista
-if (!fs.existsSync(OUTPUT)) fs.mkdirSync(OUTPUT);
+if(!fs.existsSync(OUTPUT)) fs.mkdirSync(OUTPUT);
 
-for (const {name, options} of BUILD_ENTRIES) {
+for(const {name, options} of BUILD_ENTRIES) {
     
     try {
         await esbuild.build(options);
@@ -92,7 +127,7 @@ function rawCSSPlugin(){
                 });
 
                 return {
-                    contents: `export default ${JSON.stringify(code)};`,
+                    contents: `export default ${JSON.stringify(code.trim())};`,
                     loader: 'js'
                 };
             });

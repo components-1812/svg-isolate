@@ -60,7 +60,9 @@
         <script type="module">
             import SVGIsolate from '/src/SVGIsolate.js';
 
-            SVGIsolate.define(null);
+            SVGIsolate.define(null, {
+                links: ['/src/SVGIsolate.css']
+            });
 
             const svg = document.querySelector('svg-isolate');
 

@@ -1,4 +1,4 @@
-
+import SVGIsolateCache from "./SVGIsolateCache.js";
 
 export class SVGIsolateBase extends HTMLElement {
 
@@ -11,6 +11,9 @@ export class SVGIsolateBase extends HTMLElement {
         DEFER: 'defer',
         IDLE: 'idle'
     }
+
+    static CACHE_ENABLED = true;
+    static CACHE_MAX_ENTRIES = 100;
 
     static defaults = {
         loading: this.LOADING.EAGER,
@@ -49,6 +52,11 @@ export class SVGIsolateBase extends HTMLElement {
         tagName ??= this.DEFAULT_TAG_NAME;
 
         if(!window.customElements.get(tagName)){
+
+            //Initialize cache
+            if(this.CACHE_ENABLED){
+                this.CACHE = new SVGIsolateCache(this, this.CACHE_MAX_ENTRIES);
+            }
 
             //Append styles
             for(const key of ['links', 'adopted', 'raw']) {
@@ -157,7 +165,7 @@ export class SVGIsolateBase extends HTMLElement {
         const { sanitize = false } = opt;
 
         try {
-            console.log(`Fetching SVG from ${src}...`);
+
             const response = await fetch(src);
 
             if(response.ok){
@@ -182,56 +190,6 @@ export class SVGIsolateBase extends HTMLElement {
             return null;
         }
     }
-
-    //MARK: Cache
-    static CACHE = {
-        owner: this,
-        MAX_ENTRIES: 100,
-        values: new Map(),
-        pending: new Map(),
-        set(src, value){
-
-            if(this.MAX_ENTRIES <= 0) return;
-
-            if(this.values.size >= this.MAX_ENTRIES){
-                const first = this.values.keys().next().value;
-
-                this.delete(first);
-            }
-
-            this.values.set(src, value);
-        },
-        fetchSVG(src, opt = {}){
-
-            if(this.values.has(src)) return Promise.resolve(this.get(src));
-
-            if(this.pending.has(src)) return this.pending.get(src);
-
-            const promise = this.owner.fetchSVG(src, opt)
-                .then(raw => {
-                    if(raw) this.set(src, raw);
-                    return raw;
-                })
-                .finally(() => this.pending.delete(src));
-
-            this.pending.set(src, promise);
-
-            return promise;
-        },
-        get(src){
-            return this.values.get(src);
-        },
-        has(src){
-            return this.values.has(src);
-        },
-        delete(src){
-            return this.values.delete(src);
-        },
-        clear(){
-            return this.values.clear();
-        }
-    }
-
 
     //MARK: loading
     get loading(){
@@ -268,20 +226,31 @@ export class SVGIsolateBase extends HTMLElement {
         }
     }
 
+    //MARK: set string attribute with validation
+    #setStringAttribute(name, value, validate = () => true){
+
+        if(value == null){
+            this.removeAttribute(name);
+            return;
+        }
+        value = String(value).trim();
+
+        try {
+            if(validate(value)) {
+                this.setAttribute(name, value);
+            }
+        }
+        catch(error) {
+            console.warn(`Invalid value for attribute "${name}": "${value}".`, error);
+        }
+    }
+
     //MARK: src
     get src(){
         return this.getAttribute('src');
     }
     set src(value){
-
-        if(value == null){
-            this.removeAttribute('src');
-            return;
-        }
-
-        value = String(value).trim();
-
-        this.setAttribute('src', value);
+        this.#setStringAttribute('src', value);
     }
 
     //MARK: src
@@ -289,15 +258,7 @@ export class SVGIsolateBase extends HTMLElement {
         return this.getAttribute('srcset');
     }
     set srcset(value){
-
-        if(value == null){
-            this.removeAttribute('srcset');
-            return;
-        }
-
-        value = String(value).trim();
-
-        this.setAttribute('srcset', value);
+        this.#setStringAttribute('srcset', value);
     }
 
     //MARK: sources
@@ -356,21 +317,10 @@ export class SVGIsolateBase extends HTMLElement {
 
     //MARK: useCache
     get useCache(){
-        
-        if(this.hasAttribute('no-cache')) return false;
-
-        return this.constructor.defaults.useCache;
+        return this.constructor.CACHE_ENABLED && !this.hasAttribute('no-cache');
     }
     set useCache(value){
-
-        if(value == null){
-            this.removeAttribute('no-cache');
-            return;
-        }
-
-        value = Boolean(value);
-
-        value ? this.removeAttribute('no-cache') : this.setAttribute('no-cache', '');
+        this.toggleAttribute('no-cache', value != null && value !== true && this.constructor.CACHE_ENABLED);
     }
 
     //MARK: responsive
@@ -386,19 +336,15 @@ export class SVGIsolateBase extends HTMLElement {
         return this.getAttribute('lazy-margin') ?? this.constructor.defaults.lazyMargin;
     }
     set lazyMargin(value){
+        this.#setStringAttribute('lazy-margin', value, (v) => {
 
-        if(value == null){
-            this.removeAttribute('lazy-margin');
-            return;
-        }
-        value = String(value).trim();
+            if(!CSS.supports('margin', value)) {
+                console.warn(`Invalid lazy-margin value: "${value}". It must be a valid CSS length.`);
+                return false;
+            }
 
-        if(!CSS.supports('margin', value)) {
-            console.warn(`Invalid lazy-margin value: "${value}". It must be a valid CSS length.`);
-            return;
-        }
-
-        this.setAttribute('lazy-margin', value);
+            return true;
+        });
     }
 
     //MARK: lazyThreshold
@@ -421,6 +367,21 @@ export class SVGIsolateBase extends HTMLElement {
             return;
         }
         this.setAttribute('lazy-threshold', value);
+    }
+
+    //MARK: SVG Attributes
+    get preserveAspectRatio(){
+        return this.getAttribute('preserveAspectRatio');
+    }
+    set preserveAspectRatio(value){
+        this.#setStringAttribute('preserveAspectRatio', value);
+    }
+
+    get viewBox(){
+        return this.getAttribute('viewBox');
+    }
+    set viewBox(value){
+        this.#setStringAttribute('viewBox', value);
     }
 }
 

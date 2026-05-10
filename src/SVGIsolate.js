@@ -2,7 +2,7 @@ import SVGIsolateBase from "./SVGIsolateBase.js";
 
 export class SVGIsolate extends SVGIsolateBase {
 
-    static observedAttributes = ['src'];
+    static observedAttributes = ['src', 'srcset', 'preseveAspectRatio', 'viewBox'];
 
     constructor() {
         super();
@@ -19,24 +19,47 @@ export class SVGIsolate extends SVGIsolateBase {
 
         if(svg) this.shadowRoot.append(svg);
         
-        // srcset takes priority over src — handled by ResizeObserver
-        if(this.srcset) this.#setupSrcset();
-        
-        if(this.src){
+        if(!this.src && !this.srcset){ 
 
-            this.#loadByStrategy(this.src);
-            return;
+            // No src or srcset — element is ready with no SVG
+            this.dispatchEvent(new CustomEvent('ready'));
+            this.setAttribute('ready', '');
         }
-
-        // No src or srcset — element is ready with no SVG
-        this.dispatchEvent(new CustomEvent('ready'));
-        this.setAttribute('ready', '');
     }
 
+    attributeChangedCallback(name, oldValue, newValue) {
+
+        if(oldValue === newValue) return;
+
+        switch(name){
+            // srcset takes priority over src — handled by ResizeObserver
+            case 'srcset':
+                if(this.srcset){
+                    this.dispose();
+                    this.#setupSrcset();
+                }
+                break;
+
+            case 'src':
+                if(this.src && !this.srcset){
+                    this.dispose();
+                    this.#loadByStrategy({src: this.src});
+                }
+                break;
+
+            // These attributes don't trigger a reload, but if an SVG is already rendered, update it
+            case 'preserveAspectRatio':
+            case 'viewBox': {
+                const svg = this.shadowRoot.querySelector('svg');
+                if(svg) svg.setAttribute(name, newValue);
+                break;
+            }
+        }
+    }
     
     
     disconnectedCallback() {
-        
+        this.dispose();
     }
 
 
@@ -213,6 +236,16 @@ export class SVGIsolate extends SVGIsolateBase {
 
         observer.observe(this);
         this.observers.set('resize', observer);
+    }
+
+    dispose(){
+        this.observers.forEach(observer => observer.disconnect());
+        this.observers.clear();
+
+        const svg = this.shadowRoot.querySelector('svg');
+        if(svg) svg.remove();
+
+        this.removeAttribute('ready');
     }
 }
 
