@@ -1,6 +1,5 @@
 
 
-
 export class SVGIsolateBase extends HTMLElement {
 
     static VERSION = '0.0.2';
@@ -15,9 +14,22 @@ export class SVGIsolateBase extends HTMLElement {
 
     static defaults = {
         loading: this.LOADING.EAGER,
-        sanitize: true,
-        useCache: true
+        lazyThreshold: 0,
+        lazyMargin: '0px',
+        sanitize: false,
+        useCache: true,
+        responsive: false
     }
+
+    constructor(){
+        super();
+
+        if(this.constructor.defaults.responsive) this.responsive = true;
+        if(!this.constructor.defaults.useCache) this.useCache = false;
+        if(this.constructor.defaults.sanitize) this.sanitize = true;
+    }
+
+    static sanitize = null;
 
     #observers = new Map();
 
@@ -139,11 +151,44 @@ export class SVGIsolateBase extends HTMLElement {
         this.shadowRoot.adoptedStyleSheets = adopted;
     };
 
+    //MARK: Fetching
+    static async fetchSVG(src, opt = {}){
+
+        const { sanitize = false } = opt;
+
+        try {
+            console.log(`Fetching SVG from ${src}...`);
+            const response = await fetch(src);
+
+            if(response.ok){
+
+                let raw = await response.text();
+
+                if(sanitize && typeof this.sanitize === 'function') {
+
+                    raw = this.sanitize(raw);
+                }
+
+                return raw;
+            }
+            else  {
+                console.warn(`SVG fetch failed for "${src}": ${response.status} ${response.statusText}`);
+                return null;
+            }
+        }
+        catch(error) {
+
+            console.warn(`SVG fetch failed for "${src}":`, error);
+            return null;
+        }
+    }
 
     //MARK: Cache
     static CACHE = {
-        values: new Map(),
+        owner: this,
         MAX_ENTRIES: 100,
+        values: new Map(),
+        pending: new Map(),
         set(src, value){
 
             if(this.MAX_ENTRIES <= 0) return;
@@ -156,8 +201,28 @@ export class SVGIsolateBase extends HTMLElement {
 
             this.values.set(src, value);
         },
+        fetchSVG(src, opt = {}){
+
+            if(this.values.has(src)) return Promise.resolve(this.get(src));
+
+            if(this.pending.has(src)) return this.pending.get(src);
+
+            const promise = this.owner.fetchSVG(src, opt)
+                .then(raw => {
+                    if(raw) this.set(src, raw);
+                    return raw;
+                })
+                .finally(() => this.pending.delete(src));
+
+            this.pending.set(src, promise);
+
+            return promise;
+        },
         get(src){
             return this.values.get(src);
+        },
+        has(src){
+            return this.values.has(src);
         },
         delete(src){
             return this.values.delete(src);
@@ -167,54 +232,6 @@ export class SVGIsolateBase extends HTMLElement {
         }
     }
 
-    
-    //MARK: Loading Strategies
-    static strategies = {
-        eager(ctx, src){
-
-            ctx.loadSVG(src);
-        },
-        defer(ctx, src){
-
-            window.addEventListener('DOMContentLoaded', () => ctx.loadSVG(src), {once: true})
-        },
-        idle(ctx, src){
-
-            // requestIdleCallback is not fully supported in Safari stable (May 2026). Fallback to "defer".
-            if(window.requestIdleCallback){
-                window.requestIdleCallback(() => ctx.loadSVG(src));
-            }
-            else {
-                console.warn(`requestIdleCallback is not supported in this browser. Use "defer" loading strategy instead.`);
-                ctx.constructor.strategies.defer(ctx, src);
-            }
-        },
-        lazy(ctx, src){
-
-            if(ctx.observers.has('lazy')) return;
-
-            const observer = new IntersectionObserver((entries, observer) => {
-
-                const entry = entries[0];
-
-                if(entry.isIntersecting){
-
-                    ctx.loadSVG(src);
-                    observer.disconnect();
-                    ctx.observers.delete('lazy');
-                }
-
-            }, {
-                root: null,
-                threshold: 0
-            });
-
-            observer.observe(ctx);
-            ctx.observers.set('lazy', observer);
-        }
-    }
-
-    //MARK: Getters and Set
 
     //MARK: loading
     get loading(){
@@ -269,41 +286,72 @@ export class SVGIsolateBase extends HTMLElement {
 
     //MARK: src
     get srcset(){
-        return this.getAttribute('src');
+        return this.getAttribute('srcset');
     }
     set srcset(value){
 
         if(value == null){
-            this.removeAttribute('src');
+            this.removeAttribute('srcset');
             return;
         }
 
         value = String(value).trim();
 
-        this.setAttribute('src', value);
+        this.setAttribute('srcset', value);
+    }
+
+    //MARK: sources
+    get sources(){
+
+        const base = document.baseURI;
+
+        const result = {
+            default: this.src ? new URL(this.src, base) : null,
+            candidates: []
+        };
+
+        if(this.srcset){
+
+            result.candidates = this.srcset.split(',')
+            .map(candidate => {
+
+                candidate = candidate.trim();
+
+                try {
+                    const lastSpace = candidate.lastIndexOf(' ');
+                    const descriptor = lastSpace !== -1 ? candidate.slice(lastSpace + 1) : null;
+    
+                    let url, width;
+    
+                    if(descriptor?.endsWith('w')) {
+
+                        url = candidate.slice(0, lastSpace).trim();
+                        width = Number(descriptor.slice(0, -1));
+                    } 
+                    else {
+                        // no descriptor — entire string is the URL
+                        url = candidate.trim();
+                        width = 0;
+                    }
+    
+                    return { url: new URL(url, base), width };
+                }
+                catch(error) {
+                    return null;
+                }
+            })
+            .filter(c => c !== null);
+        }
+
+        return result;
     }
 
     //MARK: sanitize
     get sanitize(){
-        const value = (this.getAttribute('sanitize') ?? '')
-            .trim().toLowerCase();
-
-        if(this.hasAttribute('sanitize') && value !== 'none' && value !== 'off') return true;
-
-        if(value === 'none' || value === 'off') return false;
-
-        return this.constructor.defaults.sanitize;
+        return this.hasAttribute('sanitize');
     }
     set sanitize(value){
-
-        if(value == null){
-            this.removeAttribute('sanitize');
-            return;
-        }
-
-        value = Boolean(value);
-
-       this.setAttribute('sanitize', value ? '' : 'none');
+        this.toggleAttribute('sanitize', value != null && value !== false);
     }
 
     //MARK: useCache
@@ -323,6 +371,56 @@ export class SVGIsolateBase extends HTMLElement {
         value = Boolean(value);
 
         value ? this.removeAttribute('no-cache') : this.setAttribute('no-cache', '');
+    }
+
+    //MARK: responsive
+    get responsive(){
+        return this.hasAttribute('responsive');
+    }
+    set responsive(value){
+        this.toggleAttribute('responsive', value != null && value !== false);
+    }
+
+    //MARK: lazyMargin
+    get lazyMargin(){
+        return this.getAttribute('lazy-margin') ?? this.constructor.defaults.lazyMargin;
+    }
+    set lazyMargin(value){
+
+        if(value == null){
+            this.removeAttribute('lazy-margin');
+            return;
+        }
+        value = String(value).trim();
+
+        if(!CSS.supports('margin', value)) {
+            console.warn(`Invalid lazy-margin value: "${value}". It must be a valid CSS length.`);
+            return;
+        }
+
+        this.setAttribute('lazy-margin', value);
+    }
+
+    //MARK: lazyThreshold
+    get lazyThreshold(){
+        const defaultValue = this.constructor.defaults.lazyThreshold;
+        const value = Number(this.getAttribute('lazy-threshold') ?? defaultValue);
+
+        return Number.isNaN(value) ? defaultValue : value;
+    }
+    set lazyThreshold(value){
+
+        if(value == null){
+            this.removeAttribute('lazy-threshold');
+            return;
+        }
+        value = Number(value);
+
+        if(Number.isNaN(value)){
+            console.warn(`Invalid lazy-threshold value: "${value}". It must be a number.`);
+            return;
+        }
+        this.setAttribute('lazy-threshold', value);
     }
 }
 
