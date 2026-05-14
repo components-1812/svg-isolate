@@ -2,22 +2,35 @@ import SVGIsolateBase from "./SVGIsolateBase.js";
 
 export class SVGIsolate extends SVGIsolateBase {
 
-    static observedAttributes = ['src', 'srcset', 'preseveAspectRatio', 'viewBox'];
+    static observedAttributes = ['src', 'srcset', 'preseveAspectRatio', 'viewBox', 'width', 'height'];
+
+    #connected = false;
 
     constructor() {
         super();
 
-        this.attachShadow({ mode: 'open' });
+        if(this.constructor.defaults.responsive) this.responsive = true;
+        if(!this.constructor.defaults.useCache) this.useCache = false;
+        if(this.constructor.defaults.sanitize) this.sanitize = true;
+        if(this.constructor.defaults.exposeSVG) this.exposeSVG = this.constructor.defaults.exposeSVG;
 
+        if(this.width) this.style.setProperty('--svg-isolate-width', this.width);
+        if(this.height) this.style.setProperty('--svg-isolate-height', this.height);
+
+        this.attachShadow({ mode: 'open' });
         this.applyStylesSheets();
     }
 
     connectedCallback() {
+        this.#connected = true;
 
         // If an inline SVG is present, move it into the shadow DOM directly — no fetch needed
         const svg = this.querySelector('svg');
 
         if(svg) this.shadowRoot.append(svg);
+
+        if(this.srcset) this.#setupSrcset();
+        else if(this.src) this.#loadByStrategy({src: this.src});
         
         if(!this.src && !this.srcset){ 
 
@@ -29,7 +42,7 @@ export class SVGIsolate extends SVGIsolateBase {
 
     attributeChangedCallback(name, oldValue, newValue) {
 
-        if(oldValue === newValue) return;
+        if(!this.#connected || oldValue === newValue) return;
 
         switch(name){
             // srcset takes priority over src — handled by ResizeObserver
@@ -49,16 +62,39 @@ export class SVGIsolate extends SVGIsolateBase {
 
             // These attributes don't trigger a reload, but if an SVG is already rendered, update it
             case 'preserveAspectRatio':
-            case 'viewBox': {
-                const svg = this.shadowRoot.querySelector('svg');
-                if(svg) svg.setAttribute(name, newValue);
+            case 'viewBox': 
+                return this.#updateSVG(name);
+
+            case 'width':
+            case 'height':
+                if(this[name]){
+                    this.style.setProperty(`--svg-isolate-${name}`, this[name]);
+                }
+                else {
+                    this.style.removeProperty(`--svg-isolate-${name}`);
+                }
                 break;
-            }
+        }
+    }
+
+    #updateSVG(name){
+        const svg = this.shadowRoot.querySelector('svg');
+        const value = this[name];
+
+        if(!svg || !value) return;
+
+        switch(name){
+            case 'viewBox':
+            case 'preserveAspectRatio':
+                svg.setAttribute(name, value);
+                break;
         }
     }
     
     
     disconnectedCallback() {
+        this.#connected = false;
+
         this.dispose();
     }
 
@@ -71,6 +107,10 @@ export class SVGIsolate extends SVGIsolateBase {
             const parser = new DOMParser();
             svg = parser.parseFromString(svg, 'image/svg+xml').querySelector('svg');
         }
+
+        if(this.exposeSVG) svg.setAttribute('part', this.exposeSVG);
+        if(this.preserveAspectRatio) svg.setAttribute('preserveAspectRatio', this.preserveAspectRatio);
+        if(this.viewBox) svg.setAttribute('viewBox', this.viewBox);
 
         const previousSVG = this.shadowRoot.querySelector('svg');
 
@@ -184,7 +224,7 @@ export class SVGIsolate extends SVGIsolateBase {
 
 
     //MARK: Srcset and Responsive management
-    resolveSource(candidates = [], width){
+    static resolveSource(candidates = [], width){
 
         if(candidates.length === 0) return null;
 
@@ -212,11 +252,17 @@ export class SVGIsolate extends SVGIsolateBase {
 
         const onResize = (width) => {
 
-            const source = this.resolveSource(this.sources.candidates, width);
+            const source = this.constructor.resolveSource(this.sources.candidates, width);
 
             if(source && source.url.href !== currentSource.src) {
                 currentSource.src = source.url.href;
                 this.#loadByStrategy(currentSource);
+                console.log(`Resolved source for width ${width}px:`, source);
+            }
+
+            if(!this.responsive) {
+                this.observers.get('resize').disconnect();
+                this.observers.delete('resize');
             }
         }
 
@@ -225,17 +271,16 @@ export class SVGIsolate extends SVGIsolateBase {
         const observer = new ResizeObserver(entries => {
             const width = entries[0].contentRect.width;
 
-            if(timeout) clearTimeout(timeout);
-            timeout = setTimeout(() => onResize(width), 100);
+            console.log(`Resize observed: ${width}px`);
 
-            if(!this.responsive) {
-                observer.disconnect();
-                this.observers.delete('resize');
+            if(width > 0){
+                if(timeout) clearTimeout(timeout);
+                timeout = setTimeout(() => onResize(width), 100);
             }
         });
 
-        observer.observe(this);
         this.observers.set('resize', observer);
+        observer.observe(this);
     }
 
     dispose(){

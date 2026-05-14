@@ -21,15 +21,8 @@ export class SVGIsolateBase extends HTMLElement {
         lazyMargin: '0px',
         sanitize: false,
         useCache: true,
-        responsive: false
-    }
-
-    constructor(){
-        super();
-
-        if(this.constructor.defaults.responsive) this.responsive = true;
-        if(!this.constructor.defaults.useCache) this.useCache = false;
-        if(this.constructor.defaults.sanitize) this.sanitize = true;
+        responsive: false,
+        exposeSVG: false
     }
 
     static sanitize = null;
@@ -369,6 +362,19 @@ export class SVGIsolateBase extends HTMLElement {
         this.setAttribute('lazy-threshold', value);
     }
 
+    //MARK: exposeSVG
+    get exposeSVG() {
+        if(!this.hasAttribute('expose-svg')) return null;
+        return this.getAttribute('expose-svg') || 'svg';
+    }
+    set exposeSVG(value) {
+        if(value == null || value === false) {
+            this.removeAttribute('expose-svg');
+            return;
+        }
+        this.setAttribute('expose-svg', value === true ? '' : String(value));
+    }
+
     //MARK: SVG Attributes
     get preserveAspectRatio(){
         return this.getAttribute('preserveAspectRatio');
@@ -382,6 +388,34 @@ export class SVGIsolateBase extends HTMLElement {
     }
     set viewBox(value){
         this.#setStringAttribute('viewBox', value);
+    }
+
+    get width(){
+        return this.getAttribute('width');
+    }
+    set width(value){
+        this.#setStringAttribute('width', value, (v) => {
+
+            if(!CSS.supports('width', value)) {
+                console.warn(`Invalid width value: "${value}". It must be a valid CSS length.`);
+                return false;
+            }
+            return true;
+        });
+    }
+
+    get height(){
+        return this.getAttribute('height');
+    }
+    set height(value){
+        this.#setStringAttribute('height', value, (v) => {
+
+            if(!CSS.supports('height', value)) {
+                console.warn(`Invalid height value: "${value}". It must be a valid CSS length.`);
+                return false;
+            }
+            return true;
+        });
     }
 }
 

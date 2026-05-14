@@ -2,125 +2,151 @@
 
 ![Id collision example](./assets/id-collision.webp)
 
-
 ## Examples
 
-- **Codepen**: 
-[Example 1](https://codepen.io/FrancoJavierGadea/pen/MYwNLWd)
-[Example 2](https://codepen.io/FrancoJavierGadea/pen/jEPgdyR)
+- [**Codepen Examples**]()
 
 <br>
 
+<!--MARK: Installation -->
+
 ## Installation
 
-#### NPM
+### NPM
 
 ```bash
 npm install @components-1812/svg-isolate
 ```
 
-- [`SVG Isolate package`](https://www.npmjs.com/package/@components-1812/svg-isolate)
+### CDN
 
-#### CDN
+#### Auto-define (recommended)
+
+Loads the bundle and registers `<svg-isolate>` automatically with default styles included.
 
 ```html
 <script type="module">
-    import SVGIsolate from "https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2/src/SVGIsolate.min.js";
-
-    const tagName = null;
-
-    SVGIsolate.define(tagName, {
-        links: ["https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2/src/SVGIsolate.min.css"]
-    });
+	import "https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate/dist/bundle.min.js";
 </script>
 ```
 
-- **jsdelivr**: [`SVG Isolate package`](https://www.jsdelivr.com/package/npm/@components-1812/svg-isolate)
-[`SVGIsolate.js`](https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2/src/SVGIsolate.min.js)
-[`SVGIsolate.css`](https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2/src/SVGIsolate.min.css)
+#### Manual definition
 
-- **unpkg**: [`SVG Isolate package`](https://app.unpkg.com/@components-1812/svg-isolate)
-[`SVGIsolate.js`](https://unpkg.com/@components-1812/svg-isolate@0.0.2/src/SVGIsolate.js)
-[`SVGIsolate.css`](https://unpkg.com/@components-1812/svg-isolate@0.0.2/src/SVGIsolate.css)
+Use this if you need a custom tag name or want to provide your own styles.
+
+```html
+<script type="module">
+	import SVGIsolate from "https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate/dist/SVGIsolate.min.js";
+
+	SVGIsolate.define("custom-svg-isolate", {
+		links: [
+			"https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate/dist/SVGIsolate.min.css",
+		],
+	});
+</script>
+```
+
+### Available files
+
+| File                 | jsdelivr                                                                                  | unpkg                                                                          |
+| -------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Bundle (recommended) | [link](https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate/dist/bundle.min.js)      | [link](https://unpkg.com/@components-1812/svg-isolate/dist/bundle.min.js)      |
+| SVGIsolate.js        | [link](https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate/dist/SVGIsolate.min.js)  | [link](https://unpkg.com/@components-1812/svg-isolate/dist/SVGIsolate.min.js)  |
+| SVGIsolate.css       | [link](https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate/dist/SVGIsolate.min.css) | [link](https://unpkg.com/@components-1812/svg-isolate/dist/SVGIsolate.min.css) |
 
 <br>
+
+<!-- MARK: Usage -->
 
 ## Usage
 
-If you use `Vite` or a framework based on `Vite` such as `Astro`, you can import the component in a **client-side** script file:
+Import the component in a client-side script file:
 
 ```js
-import '@components-1812/svg-isolate';
+import "@components-1812/svg-isolate";
 ```
 
-and use it in your HTML directly:
+> This loads the bundle, auto-defines the custom element as `<svg-isolate>`, and applies the default styles via `adoptedStyleSheets`.
 
 ```html
+<!-- inline SVG -->
 <svg-isolate>
-    <svg width="200" height="200"><!-- SVG content --></svg>
+	<svg width="200" height="200"><!-- SVG content --></svg>
 </svg-isolate>
 
-<svg-isolate src="path/to/circle.svg"></svg-isolate>
+<!-- load from file -->
+<svg-isolate src="path/to/circle.svg" />
+
+<svg-isolate src="path/to/hexagon.svg" loading="lazy" />
+
+<svg-isolate srcset="icon-300.svg 300w, icon-600.svg 600w" />
 ```
 
-> **Note:**
-> 
-> If you are using a builder or framework that doesn't support `import ?raw`, you need to load the component and its stylesheets manually.
-> 
-> see [Adding CSS stylesheets manually](#adding-css-stylesheets-manually)
+---
 
+### Custom definition
 
-<br>
+If you need to register the element under a different tag name or inject custom styles into its shadow DOM, use `SVGIsolate.define()` directly instead of the auto-import.
 
-## Adding CSS stylesheets manually
+#### Via `adoptedStyleSheets`
 
-If you want to add custom stylesheets to the component or need to load stylesheets from a different path, you can do it like this:
+Best for programmatically constructed styles or when working with a build system that produces `CSSStyleSheet` objects.
 
-- Using `CSSStyleSheet` and the component’s `AdoptedStyleSheets` property:
+```js
+import SVGIsolate from "@components-1812/svg-isolate/SVGIsolate.js";
 
-    ```js
-    import { SVGIsolate } from '@components-1812/svg-isolate/SVGIsolate.js';
+const sheet = new CSSStyleSheet();
+sheet.replaceSync(`
+    :host {
+        display: inline-block;
+    }
+`);
 
-    const SVGIsolateCSS = new CSSStyleSheet();
-    SVGIsolateCSS.replaceSync(`
-        * {
-            ...raw css...
+SVGIsolate.define("custom-svg-isolate", { adopted: [sheet] });
+```
+
+#### Via raw CSS string
+
+Best for inlining styles directly without an external file.
+
+```js
+import SVGIsolate from "@components-1812/svg-isolate/SVGIsolate.js";
+
+SVGIsolate.define("custom-svg-isolate", {
+	raw: [
+		`
+        :host {
+            display: inline-block;
         }
-    `);
+    `,
+	],
+});
+```
 
-    SVGIsolate.define(null, { adopted: [SVGIsolateCSS] });
-    ```
+#### Via external stylesheet
 
-<br>
+Best for loading styles from a CSS file at runtime.
 
-- Using a `<style>` tag inside the shadow root of the component:
+```js
+import SVGIsolate from "@components-1812/svg-isolate/SVGIsolate.js";
 
-    ```js
-    import { SVGIsolate } from '@components-1812/svg-isolate/SVGIsolate.js';
+SVGIsolate.define(null, { links: ["/path/to/styles.css"] });
+```
 
-    SVGIsolate.define(null, { 
-        raw: [`
-            * {
-                ...raw css..
-            }
-        `] 
-    });
-    ```
+All three options can be combined in a single `define()` call:
 
-<br>
-
-- Using a `<link>` tag inside the shadow root of the component:
-
-    ```js
-    import { SVGIsolate } from '@components-1812/svg-isolate/SVGIsolate.js';
-
-    SVGIsolate.define(null, { links: ['/path/to/file.css'] });
-    ```
-
+```js
+SVGIsolate.define("custom-svg-isolate", {
+	adopted: [sheet],
+	raw: [":host { display: block; }"],
+	links: ["/path/to/styles.css"],
+});
+```
 
 <br>
 
 <!--MARK: Cache -->
+
 ## Cache
 
 By default, `<svg-isolate>` caches every SVG source **in memory** after the first fetch, so subsequent requests for the same URL are served instantly without hitting the network.
@@ -136,7 +162,7 @@ Use the `no-cache` attribute:
 Or via the `.useCache` property:
 
 ```js
-const svg = document.querySelector('svg-isolate');
+const svg = document.querySelector("svg-isolate");
 svg.useCache = false;
 ```
 
@@ -175,10 +201,10 @@ The cache is shared across all instances of the same component class. Two `<svg-
 ### Accessing the cache directly
 
 ```js
-SVGIsolate.CACHE.clear();         // clear all entries
-SVGIsolate.CACHE.delete(src);     // remove a specific entry
-SVGIsolate.CACHE.has(src);        // check if a src is cached
-SVGIsolate.CACHE.values;          // Map with all cached entries
+SVGIsolate.CACHE.clear(); // clear all entries
+SVGIsolate.CACHE.delete(src); // remove a specific entry
+SVGIsolate.CACHE.has(src); // check if a src is cached
+SVGIsolate.CACHE.values; // Map with all cached entries
 ```
 
 #### Preloading
@@ -186,7 +212,7 @@ SVGIsolate.CACHE.values;          // Map with all cached entries
 You can manually populate the cache before any component renders:
 
 ```js
-await SVGIsolate.CACHE.fetchSVG('/assets/icon.svg');
+await SVGIsolate.CACHE.fetchSVG("/assets/icon.svg");
 ```
 
 This is useful for preloading critical SVGs during app initialization so the first render is instant.
@@ -194,6 +220,7 @@ This is useful for preloading critical SVGs during app initialization so the fir
 <br>
 
 <!-- MARK: Loading -->
+
 ## Loading Strategies
 
 `<svg-isolate>` supports four loading strategies controlled by the `loading` attribute.
@@ -236,10 +263,10 @@ You can control when the load is triggered with `lazy-margin` and `lazy-threshol
 
 ```html
 <svg-isolate
-  src="icon.svg"
-  loading="lazy"
-  lazy-margin="200px"
-  lazy-threshold="0.5"
+	src="icon.svg"
+	loading="lazy"
+	lazy-margin="200px"
+	lazy-threshold="0.5"
 />
 ```
 
@@ -249,27 +276,25 @@ You can control when the load is triggered with `lazy-margin` and `lazy-threshol
 ### Setting a default strategy
 
 ```js
-SVGIsolate.defaults.loading = 'lazy';
+SVGIsolate.defaults.loading = "lazy";
 ```
 
 <br>
 
 <!--MARK: Responsive -->
+
 ## srcset & Responsive
 
-`<svg-isolate>` supports `srcset` to serve different SVG files depending on the component's rendered **width**, similar to how native `<img srcset>` works. 
+`<svg-isolate>` supports `srcset` to serve different SVG files depending on the component's rendered **width**, similar to how native `<img srcset>` works.
 
 ### Basic usage
 
-Each candidate requires a width descriptor (`w`) representing the intrinsic width the SVG was designed for. 
+Each candidate requires a width descriptor (`w`) representing the intrinsic width the SVG was designed for.
 
 If no descriptor is provided, the candidate defaults to `0w`.
 
-
 ```html
-<svg-isolate
-  srcset="icon-300.svg 300w, icon-600.svg 600w, icon-900.svg 900w"
-/>
+<svg-isolate srcset="icon-300.svg 300w, icon-600.svg 600w, icon-900.svg 900w" />
 ```
 
 ### src and srcset
@@ -278,18 +303,15 @@ If no descriptor is provided, the candidate defaults to `0w`.
 
 ```html
 <!-- only srcset is used, src is ignored -->
-<svg-isolate
-  src="icon.svg"
-  srcset="icon-300.svg 300w, icon-600.svg 600w"
-/>
+<svg-isolate src="icon.svg" srcset="icon-300.svg 300w, icon-600.svg 600w" />
 ```
 
 This also applies when attributes change dynamically — if `srcset` is set at any point, `src` stops being considered until `srcset` is removed.
 
 ```js
-const el = document.querySelector('svg-isolate');
+const el = document.querySelector("svg-isolate");
 
-el.srcset = 'icon-300.svg 300w, icon-600.svg 600w'; // src ignored from now on
+el.srcset = "icon-300.svg 300w, icon-600.svg 600w"; // src ignored from now on
 el.srcset = null; // src is considered again
 ```
 
@@ -305,7 +327,7 @@ candidates: 300w, 600w, 900w
 → 600w ≥ 450 — covers ✓ → selected
 ```
 
-If the component is wider than all candidates, the **largest** is used as a fallback. 
+If the component is wider than all candidates, the **largest** is used as a fallback.
 
 The selection runs once on connect, and again on every resize if `responsive` is enabled.
 
@@ -315,8 +337,8 @@ By default the component resolves the candidate once on connect. Add the `respon
 
 ```html
 <svg-isolate
-  srcset="icon-300.svg 300w, icon-600.svg 600w, icon-900.svg 900w"
-  responsive
+	srcset="icon-300.svg 300w, icon-600.svg 600w, icon-900.svg 900w"
+	responsive
 />
 ```
 
@@ -330,141 +352,182 @@ SVGIsolate.defaults.responsive = true;
 
 <br>
 
+<!-- MARK: Styling the inner SVG -->
+## Styling the inner SVG
+
+The SVG rendered inside `<svg-isolate>` lives in a shadow DOM, so external CSS cannot reach it directly. The component provides a few ways to interact with it.
+
+---
+
+### `viewBox`
+
+Sets the `viewBox` attribute on the inner `<svg>` element. Useful for cropping or reframing the SVG coordinate system without modifying the source file.
+
+```html
+<svg-isolate src="icon.svg" viewBox="0 0 100 100" />
+```
+
+```js
+el.viewBox = '0 0 50 50';
+```
+
+Changing this attribute dynamically updates the rendered SVG immediately without triggering a reload.
+
+---
+
+### `preserveAspectRatio`
+
+Sets the `preserveAspectRatio` attribute on the inner `<svg>` element. Controls how the SVG scales within its viewport.
+
+```html
+<svg-isolate src="icon.svg" preserveAspectRatio="xMidYMid meet" />
+```
+
+```js
+el.preserveAspectRatio = 'xMinYMin slice';
+```
+
+Changing this attribute dynamically updates the rendered SVG immediately without triggering a reload.
+
+---
+
+### `expose-svg`
+
+Adds a `part` attribute to the inner `<svg>` element, making it accessible via `::part()` from external CSS.
+
+```html
+<!-- expose with default part name "svg" -->
+<svg-isolate src="icon.svg" expose-svg />
+
+<!-- expose with a custom part name -->
+<svg-isolate src="icon.svg" expose-svg="my-icon" />
+```
+
+```css
+/* default name */
+svg-isolate::part(svg) {
+    fill: red;
+    transform: rotate(45deg);
+}
+
+/* custom name */
+svg-isolate::part(my-icon) {
+    fill: red;
+}
+```
+
+> **Note:** `::part()` gives access to the `<svg>` tag itself. Its children (`path`, `circle`, etc.) remain encapsulated and cannot be targeted from outside. Use [CSS custom properties](#css-custom-properties) to style internals.
+
+#### Enable for all instances
+
+```js
+SVGIsolate.defaults.exposeSVG = true;          // exposes with default part name 'svg'
+SVGIsolate.defaults.exposeSVG = 'custom-name'; // exposes with a custom part name
+```
+
+---
+
+### CSS custom properties
+
+CSS custom properties penetrate the shadow DOM boundary, making them the most flexible way to style SVG internals.
+
+Define the custom property on the component and consume it inside the shadow DOM styles:
+
+```css
+svg-isolate {
+    --svg-fill: red;
+    --svg-stroke: blue;
+}
+```
+
+```js
+// when defining the component, inject a style that consumes the custom properties
+SVGIsolate.define('svg-isolate', {
+    raw: [`
+        svg * {
+            fill: var(--svg-fill, currentColor);
+            stroke: var(--svg-stroke, none);
+        }
+    `]
+});
+```
+
+This approach works for any CSS property regardless of shadow DOM encapsulation.
+
+<br>
+
+<!--MARK: Attributes -->
 <!--MARK: Attributes -->
 ## Attributes
 
-### Reactive attributes
+### Reactive
 
-Changes to these attributes are observed and trigger the component to update automatically.
+| Attribute | Description |
+|-----------|-------------|
+| `src` | Path to the SVG file. Triggers a reload when changed. Ignored if `srcset` is present |
+| `srcset` | Comma-separated srcset candidates. Takes priority over `src`. Triggers a reload when changed |
+| `preserveAspectRatio` | Forwarded directly to the inner `<svg>` without triggering a reload |
+| `viewBox` | Forwarded directly to the inner `<svg>` without triggering a reload |
 
-#### `src`
+### Behavioral
 
-Path to the SVG file to load. If not set at init time, the component looks for an inline `<svg>` in the light DOM and moves it into the shadow DOM.
+| Attribute | Default | Description |
+|-----------|---------|-------------|
+| `loading` | `eager` | Loading strategy. One of `eager`, `defer`, `idle`, `lazy` |
+| `responsive` | `false` | Enables automatic candidate swapping on resize |
+| `no-cache` | `false` | Disables in-memory caching for this instance |
+| `sanitize` | `false` | Enables sanitization before rendering |
+| `lazy-margin` | `0px` | Viewport margin before triggering lazy load |
+| `lazy-threshold` | `0` | Visibility ratio before triggering lazy load (0 to 1) |
+| `expose-svg` | — | Exposes the inner `<svg>` via `::part()`. Accepts an optional custom part name |
 
-```html
-<!-- load from file -->
-<svg-isolate src="icon.svg" />
+### State (read-only)
 
-<!-- inline SVG fallback -->
-<svg-isolate>
-    <svg width="200" height="200"><!-- SVG content --></svg>
-</svg-isolate>
-```
+| Attribute | Description |
+|-----------|-------------|
+| `ready` | Present when the SVG has been successfully rendered |
+| `ready-links` | Present when all external stylesheets have finished loading |
 
-Changing `src` dynamically triggers a reload. Ignored if `srcset` is present.
-
-```js
-el.src = 'new-icon.svg'; // triggers reload
-```
-
----
-
-#### `srcset`
-
-A comma-separated list of SVG candidates with width descriptors. Takes priority over `src`.
-
-```html
-<svg-isolate srcset="icon-300.svg 300w, icon-600.svg 600w" />
-```
-
-See [srcset & Responsive](#srcset--responsive) for full details.
-
----
-
-### Behavioral attributes
-
-These attributes control how and when the SVG is loaded. They do not trigger a reload when changed.
-
-#### `loading`
-
-Loading strategy. Accepted values: `eager` (default), `defer`, `idle`, `lazy`.
-
-```html
-<svg-isolate src="icon.svg" loading="lazy" />
-```
-
-#### `responsive`
-
-Boolean attribute. When present, the component listens for resize events and swaps the SVG candidate automatically.
-
-```html
-<svg-isolate srcset="icon-300.svg 300w, icon-600.svg 600w" responsive />
-```
-
-#### `no-cache`
-
-Boolean attribute. Disables in-memory caching for this instance.
-
-```html
-<svg-isolate src="icon.svg" no-cache />
-```
-
-#### `sanitize`
-
-Boolean attribute. When present, the SVG is passed through the sanitizer function before rendering. Requires `SVGIsolate.sanitize` to be set.
-
-```html
-<svg-isolate src="icon.svg" sanitize />
-```
-
-#### `lazy-margin`
-
-Extends the viewport boundary before triggering a lazy load. Accepts any valid CSS margin value. Default is `0px`.
-
-```html
-<svg-isolate src="icon.svg" loading="lazy" lazy-margin="200px" />
-```
-
-#### `lazy-threshold`
-
-Percentage of the element that must be visible before triggering a lazy load (0 to 1). Default is `0`.
-
-```html
-<svg-isolate src="icon.svg" loading="lazy" lazy-threshold="0.5" />
-```
-
----
-
-### State attributes
-
-Set by the component to reflect its current state. Read-only.
-
-#### `ready`
-
-Present when the SVG has been successfully rendered.
+Use these attributes to drive CSS transitions or show loading states while the component initializes.
 
 ```css
-svg-isolate:not([ready]) {
+svg-isolate {
     opacity: 0;
+    transition: opacity 0.3s;
 }
 svg-isolate[ready] {
     opacity: 1;
 }
 ```
 
-#### `ready-links`
-
-Present when all external stylesheets have finished loading.
-
+```css
+svg-isolate:not([ready-links]) {
+    opacity: 0;
+}
+svg-isolate[ready-links] {
+    opacity: 1;
+}
+```
 
 <br>
 
 ## Events
 
-- `ready`: Dispatched when the component is ready, and the svg is loaded and rendered in the shadow DOM. shoot every time you change the `src` attribute or call `loadSVG` method.
+| Event | Description |
+|-------|-------------|
+| `ready` | Fired every time an SVG is successfully rendered — on load, on `src`/`srcset` changes, and on srcset candidate swaps |
+| `ready-links` | Fired once when all external stylesheets injected via `links` have finished loading |
 
-- `ready-links`: Dispatched when the links stylesheets are loaded.
 
 <br>
 
-## Methods
-
-- `async loadSVG(src)`: Load an svg from a path and replace the current svg in the shadow DOM.
+> For full API documentation including properties, methods, return types and parameters, see [docs/api.md](./docs/api.md).
 
 <br>
 
 ## License
 
 MIT
+
 
 

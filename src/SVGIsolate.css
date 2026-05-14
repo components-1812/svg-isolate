@@ -1,11 +1,17 @@
 :host {
     margin: 0;
     padding: 0;
-    width: 100%;
-    height: 100%;
+    contain: size;
+    
     display: inline-block;
     position: relative;
     overflow: hidden;
+
+    --svg-isolate-width: 100%;
+    --svg-isolate-height: 100%;
+
+    width: var(--svg-isolate-width);
+    height: var(--svg-isolate-height);
 }
 :host svg {
     width: 100%;
