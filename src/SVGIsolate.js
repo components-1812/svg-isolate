@@ -3,7 +3,7 @@ import SVGIsolateBase from "./SVGIsolateBase.js";
 
 export class SVGIsolate extends SVGIsolateBase {
 
-    static observedAttributes = ['src', 'srcset', 'preseveAspectRatio', 'viewBox', 'width', 'height'];
+    static observedAttributes = ['src', 'srcset', 'preserveAspectRatio', 'viewBox', 'width', 'height'];
 
     #connected = false;
 
@@ -52,7 +52,7 @@ export class SVGIsolate extends SVGIsolateBase {
 
             case 'width':
             case 'height':
-                this[name] ? this.style[name] = this[name] : this.style[name] = undefined;
+                this[name] ? this.style[name] = this[name] : this.style.removeProperty(name);
                 break;
         }
     }
@@ -259,7 +259,6 @@ export class SVGIsolate extends SVGIsolateBase {
             }
 
             if(!this.responsive) {
-                console.log('clear');
                 this.observers.get('resize').disconnect();
                 this.observers.delete('resize');
             }
