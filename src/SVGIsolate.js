@@ -1,3 +1,4 @@
+import { ComponentStyles } from "./StyleSystem.js";
 import SVGIsolateBase from "./SVGIsolateBase.js";
 
 export class SVGIsolate extends SVGIsolateBase {
@@ -9,35 +10,28 @@ export class SVGIsolate extends SVGIsolateBase {
     constructor() {
         super();
 
-        if(this.constructor.defaults.responsive) this.responsive = true;
-        if(!this.constructor.defaults.useCache) this.useCache = false;
-        if(this.constructor.defaults.sanitize) this.sanitize = true;
-        if(this.constructor.defaults.exposeSVG) this.exposeSVG = this.constructor.defaults.exposeSVG;
+        const defaults = this.constructor.defaults;
 
-        if(this.width) this.style.setProperty('--svg-isolate-width', this.width);
-        if(this.height) this.style.setProperty('--svg-isolate-height', this.height);
+        if(defaults.responsive) this.responsive = true;
+        if(!defaults.useCache) this.useCache = false;
+        if(defaults.sanitize) this.sanitize = true;
+        if(defaults.exposeSVG) this.exposeSVG = defaults.exposeSVG;
+
+        if(this.width) this.style.width = this.width;
+        if(this.height) this.style.height = this.height;
 
         this.attachShadow({ mode: 'open' });
-        this.applyStylesSheets();
+
+        this.componentStyles = new ComponentStyles(this, this.constructor.styleSheets);
+
+        this.componentStyles.apply();
     }
 
     connectedCallback() {
+
+        this.#load();
+
         this.#connected = true;
-
-        // If an inline SVG is present, move it into the shadow DOM directly — no fetch needed
-        const svg = this.querySelector('svg');
-
-        if(svg) this.shadowRoot.append(svg);
-
-        if(this.srcset) this.#setupSrcset();
-        else if(this.src) this.#loadByStrategy({src: this.src});
-        
-        if(!this.src && !this.srcset){ 
-
-            // No src or srcset — element is ready with no SVG
-            this.dispatchEvent(new CustomEvent('ready'));
-            this.setAttribute('ready', '');
-        }
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -47,19 +41,10 @@ export class SVGIsolate extends SVGIsolateBase {
         switch(name){
             // srcset takes priority over src — handled by ResizeObserver
             case 'srcset':
-                if(this.srcset){
-                    this.dispose();
-                    this.#setupSrcset();
-                }
-                break;
-
             case 'src':
-                if(this.src && !this.srcset){
-                    this.dispose();
-                    this.#loadByStrategy({src: this.src});
-                }
+                this.#load();
                 break;
-
+           
             // These attributes don't trigger a reload, but if an SVG is already rendered, update it
             case 'preserveAspectRatio':
             case 'viewBox': 
@@ -67,14 +52,15 @@ export class SVGIsolate extends SVGIsolateBase {
 
             case 'width':
             case 'height':
-                if(this[name]){
-                    this.style.setProperty(`--svg-isolate-${name}`, this[name]);
-                }
-                else {
-                    this.style.removeProperty(`--svg-isolate-${name}`);
-                }
+                this[name] ? this.style[name] = this[name] : this.style[name] = undefined;
                 break;
         }
+    }
+
+    disconnectedCallback() {
+        this.#connected = false;
+
+        this.dispose();
     }
 
     #updateSVG(name){
@@ -90,14 +76,6 @@ export class SVGIsolate extends SVGIsolateBase {
                 break;
         }
     }
-    
-    
-    disconnectedCallback() {
-        this.#connected = false;
-
-        this.dispose();
-    }
-
 
     //MARK: Rendering
     renderSVG(svg){
@@ -125,6 +103,7 @@ export class SVGIsolate extends SVGIsolateBase {
         this.setAttribute('ready', '');
     }
 
+
     //MARK: Loading
     async loadSVG(src){
 
@@ -147,6 +126,28 @@ export class SVGIsolate extends SVGIsolateBase {
         }
         catch(error) {
             console.warn(`SVG load failed for "${src}":`, error);
+        }
+    }
+
+    #load(){
+
+        if(this.#connected) this.dispose();
+
+        switch(true) {
+            case this.srcset != null:
+                this.#watchSrcset();
+                break;
+
+            case this.src != null:
+                this.#loadByStrategy({src: this.src});
+                break;
+        
+            default:
+                const svg = this.querySelector('svg');
+                if(svg) this.shadowRoot.append(svg);
+
+                this.dispatchEvent(new CustomEvent('ready'));
+                this.setAttribute('ready', '');
         }
     }
 
@@ -239,16 +240,14 @@ export class SVGIsolate extends SVGIsolateBase {
         return sorted.at(-1);
     }
 
-    #setupSrcset() {
+    #watchSrcset() {
 
         /**
          * Shared reference to the current resolved source.
          * Passed by reference to loading strategies so that lazy loading
          * always reads the latest value at the moment the element enters the viewport.
          */
-        const currentSource = {
-            src: null,
-        };
+        const currentSource = { src: null };
 
         const onResize = (width) => {
 
@@ -257,10 +256,10 @@ export class SVGIsolate extends SVGIsolateBase {
             if(source && source.url.href !== currentSource.src) {
                 currentSource.src = source.url.href;
                 this.#loadByStrategy(currentSource);
-                console.log(`Resolved source for width ${width}px:`, source);
             }
 
             if(!this.responsive) {
+                console.log('clear');
                 this.observers.get('resize').disconnect();
                 this.observers.delete('resize');
             }
@@ -269,9 +268,8 @@ export class SVGIsolate extends SVGIsolateBase {
         let timeout;
 
         const observer = new ResizeObserver(entries => {
-            const width = entries[0].contentRect.width;
 
-            console.log(`Resize observed: ${width}px`);
+            const width = entries[0].contentRect.width;
 
             if(width > 0){
                 if(timeout) clearTimeout(timeout);

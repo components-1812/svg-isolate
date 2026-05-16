@@ -84,7 +84,9 @@ import "@components-1812/svg-isolate";
 
 ---
 
-### Custom definition
+<!--MARK: Custom Definition-->
+<!--MARK: Custom Definition-->
+## Custom definition
 
 If you need to register the element under a different tag name or inject custom styles into its shadow DOM, use `SVGIsolate.define()` directly instead of the auto-import.
 
@@ -96,11 +98,7 @@ Best for programmatically constructed styles or when working with a build system
 import SVGIsolate from "@components-1812/svg-isolate/SVGIsolate.js";
 
 const sheet = new CSSStyleSheet();
-sheet.replaceSync(`
-    :host {
-        display: inline-block;
-    }
-`);
+sheet.replaceSync(`:host { display: inline-block; }`);
 
 SVGIsolate.define("custom-svg-isolate", { adopted: [sheet] });
 ```
@@ -113,19 +111,13 @@ Best for inlining styles directly without an external file.
 import SVGIsolate from "@components-1812/svg-isolate/SVGIsolate.js";
 
 SVGIsolate.define("custom-svg-isolate", {
-	raw: [
-		`
-        :host {
-            display: inline-block;
-        }
-    `,
-	],
+    raw: [`:host { display: inline-block; }`],
 });
 ```
 
 #### Via external stylesheet
 
-Best for loading styles from a CSS file at runtime.
+Best for loading styles from a CSS file at runtime. URLs are resolved against `document.baseURI`, so relative paths are accepted.
 
 ```js
 import SVGIsolate from "@components-1812/svg-isolate/SVGIsolate.js";
@@ -137,11 +129,167 @@ All three options can be combined in a single `define()` call:
 
 ```js
 SVGIsolate.define("custom-svg-isolate", {
-	adopted: [sheet],
-	raw: [":host { display: block; }"],
-	links: ["/path/to/styles.css"],
+    adopted: [sheet],
+    raw: [":host { display: block; }"],
+    links: ["/path/to/styles.css"],
 });
 ```
+
+Duplicate entries are ignored automatically — adding the same URL or `CSSStyleSheet` object twice has no effect.
+
+<!--MARK: Instance styles-->
+## Instance styles
+
+Every `<svg-isolate>` element exposes a `componentStyles` property — a `ComponentStyles` instance that controls the styles injected into its shadow DOM. You can add or replace styles on a specific element at any time without affecting other instances.
+
+### Adding styles
+
+`componentStyles.add()` accepts the same `{ links, adopted, raw }` shape as `define()`. Chain `.apply()` to re-render the shadow DOM styles immediately.
+
+```js
+const el = document.querySelector('svg-isolate');
+
+el.componentStyles
+    .add({ raw: [`:host { outline: 2px solid red; }`] })
+    .apply();
+```
+
+Duplicate entries are ignored — adding the same URL or raw string twice has no effect.
+
+### Targeting SVG internals
+
+CSS injected this way lives inside the shadow root, so it can reach the SVG elements directly:
+
+```js
+document.querySelector('svg-isolate[sanitize]')
+    .componentStyles
+    .add({
+        raw: [`
+            circle { fill: #5f000d; }
+            rect   { fill: #070070; }
+            text   { fill: #c5b800; font-family: serif; }
+        `]
+    })
+    .apply();
+```
+
+### Working with the collections directly
+
+Each style type is a `StyleCollection` instance and can be manipulated directly before calling `.apply()`:
+
+```js
+const { raw, links, adopted } = el.componentStyles;
+
+// check what's already registered
+console.log(raw.size);    // number of raw CSS strings
+console.log(links.size);  // number of external stylesheets
+
+// check if a specific entry exists
+links.has('https://example.com/theme.css');
+
+// iterate over current entries
+for (const url of links) {
+    console.log(url);
+}
+
+// remove everything from one collection and replace it
+raw.clear();
+raw.add([`circle { fill: hotpink; }`]);
+
+el.componentStyles.apply();
+```
+
+### Adding an external stylesheet to one instance
+
+```js
+el.componentStyles
+    .add({ links: ['/themes/dark.css'] })
+    .apply();
+```
+
+The `ready-links` event fires once the stylesheet has loaded.
+
+### Replacing all styles
+
+Call `.clear()` before `.add()` to discard everything and start fresh:
+
+```js
+el.componentStyles
+    .clear()
+    .add({ raw: [`:host { background: #000; }`] })
+    .apply();
+```
+
+> **Note:** `componentStyles` is per-instance. Changes made to one element do not affect other `<svg-isolate>` elements on the page, even if they share the same `src`.
+
+<br>
+
+<!--MARK: Default styles -->
+## Default styles (bundle)
+
+When loaded via the auto-import bundle, <svg-isolate> ships with these default host styles:
+
+```css
+:host {
+    position: relative;
+    display: inline-block;
+
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+
+    contain: size;
+
+    overflow: hidden;
+}
+:host svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+```
+From: [/src/SVGIsolate.css](/src/SVGIsolate.css)
+The most important of these is `contain: size` — it prevents the component from triggering
+layout recalculations in its parent (particularly relevant inside `flex` and `grid` containers,
+where an unsized inline element can cause repeated reflows).
+
+If you register the component manually via `SVGIsolate.define()`, none of these styles are applied automatically.
+You can inject them (or a modified version) via the `adopted`, `raw`, or `links` options — see [Custom definition](#custom-definition).
+
+Note that `width: 100%; height: 100%` means the component sizes itself to its container —
+if the container has no explicit dimensions, the component collapses to zero.
+Use the [`width` and `height` attributes](#width-and-height) or size the container from CSS.
+
+To override the defaults on a specific instance without touching others, use `componentStyles` directly:
+
+```js
+el.componentStyles
+    .clear()
+    .add({ raw: [`:host { display: block; width: 300px; height: 300px; }`] })
+    .apply();
+```
+
+See [Instance styles](#instance-styles) for the full API.
+
+<br>
+
+<!--MARK: width and height-->
+## `width` and `height`
+
+Sets `style.width` and `style.height` on the `<svg-isolate>` host element directly.
+
+```html
+<svg-isolate src="icon.svg" width="200px" height="200px" />
+<svg-isolate src="banner.svg" width="100%" height="4rem" />
+```
+
+```js
+el.width = '50%';
+el.height = '120px';
+```
+
+Accepts any valid CSS length value. Equivalent to setting `style.width` / `style.height` inline — useful when you want to control dimensions declaratively via HTML rather than in your stylesheet.
 
 <br>
 
@@ -352,7 +500,9 @@ SVGIsolate.defaults.responsive = true;
 
 <br>
 
+
 <!-- MARK: Styling the inner SVG -->
+
 ## Styling the inner SVG
 
 The SVG rendered inside `<svg-isolate>` lives in a shadow DOM, so external CSS cannot reach it directly. The component provides a few ways to interact with it.
@@ -368,7 +518,7 @@ Sets the `viewBox` attribute on the inner `<svg>` element. Useful for cropping o
 ```
 
 ```js
-el.viewBox = '0 0 50 50';
+el.viewBox = "0 0 50 50";
 ```
 
 Changing this attribute dynamically updates the rendered SVG immediately without triggering a reload.
@@ -384,7 +534,7 @@ Sets the `preserveAspectRatio` attribute on the inner `<svg>` element. Controls 
 ```
 
 ```js
-el.preserveAspectRatio = 'xMinYMin slice';
+el.preserveAspectRatio = "xMinYMin slice";
 ```
 
 Changing this attribute dynamically updates the rendered SVG immediately without triggering a reload.
@@ -406,13 +556,13 @@ Adds a `part` attribute to the inner `<svg>` element, making it accessible via `
 ```css
 /* default name */
 svg-isolate::part(svg) {
-    fill: red;
-    transform: rotate(45deg);
+	fill: red;
+	transform: rotate(45deg);
 }
 
 /* custom name */
 svg-isolate::part(my-icon) {
-    fill: red;
+	fill: red;
 }
 ```
 
@@ -421,8 +571,8 @@ svg-isolate::part(my-icon) {
 #### Enable for all instances
 
 ```js
-SVGIsolate.defaults.exposeSVG = true;          // exposes with default part name 'svg'
-SVGIsolate.defaults.exposeSVG = 'custom-name'; // exposes with a custom part name
+SVGIsolate.defaults.exposeSVG = true; // exposes with default part name 'svg'
+SVGIsolate.defaults.exposeSVG = "custom-name"; // exposes with a custom part name
 ```
 
 ---
@@ -435,20 +585,20 @@ Define the custom property on the component and consume it inside the shadow DOM
 
 ```css
 svg-isolate {
-    --svg-fill: red;
-    --svg-stroke: blue;
+	--svg-fill: red;
+	--svg-stroke: blue;
 }
 ```
 
 ```js
 // when defining the component, inject a style that consumes the custom properties
-SVGIsolate.define('svg-isolate', {
-    raw: [`
+SVGIsolate.define("svg-isolate", {
+	raw: `
         svg * {
             fill: var(--svg-fill, currentColor);
             stroke: var(--svg-stroke, none);
         }
-    `]
+    `
 });
 ```
 
@@ -457,55 +607,57 @@ This approach works for any CSS property regardless of shadow DOM encapsulation.
 <br>
 
 <!--MARK: Attributes -->
-<!--MARK: Attributes -->
+
 ## Attributes
 
 ### Reactive
 
-| Attribute | Description |
-|-----------|-------------|
-| `src` | Path to the SVG file. Triggers a reload when changed. Ignored if `srcset` is present |
-| `srcset` | Comma-separated srcset candidates. Takes priority over `src`. Triggers a reload when changed |
-| `preserveAspectRatio` | Forwarded directly to the inner `<svg>` without triggering a reload |
-| `viewBox` | Forwarded directly to the inner `<svg>` without triggering a reload |
+| Attribute             | Description                                                                                         |
+| --------------------- | --------------------------------------------------------------------------------------------------- |
+| `src`                 | Path to the SVG file. Triggers a reload when changed. Ignored if `srcset` is present                |
+| `srcset`              | Comma-separated srcset candidates. Takes priority over `src`. Triggers a reload when changed        |
+| `preserveAspectRatio` | Forwarded directly to the inner `<svg>` without triggering a reload                                 |
+| `viewBox`             | Forwarded directly to the inner `<svg>` without triggering a reload                                 |
+| `width`               | Sets `style.width` on the host element. Accepts any valid CSS length (e.g. `200px`, `50%`, `10rem`) |
+| `height`              | Sets `style.height` on the host element. Accepts any valid CSS length                               |
 
 ### Behavioral
 
-| Attribute | Default | Description |
-|-----------|---------|-------------|
-| `loading` | `eager` | Loading strategy. One of `eager`, `defer`, `idle`, `lazy` |
-| `responsive` | `false` | Enables automatic candidate swapping on resize |
-| `no-cache` | `false` | Disables in-memory caching for this instance |
-| `sanitize` | `false` | Enables sanitization before rendering |
-| `lazy-margin` | `0px` | Viewport margin before triggering lazy load |
-| `lazy-threshold` | `0` | Visibility ratio before triggering lazy load (0 to 1) |
-| `expose-svg` | — | Exposes the inner `<svg>` via `::part()`. Accepts an optional custom part name |
+| Attribute        | Default | Description                                                                    |
+| ---------------- | ------- | ------------------------------------------------------------------------------ |
+| `loading`        | `eager` | Loading strategy. One of `eager`, `defer`, `idle`, `lazy`                      |
+| `responsive`     | `false` | Enables automatic candidate swapping on resize                                 |
+| `no-cache`       | `false` | Disables in-memory caching for this instance                                   |
+| `sanitize`       | `false` | Enables sanitization before rendering                                          |
+| `lazy-margin`    | `0px`   | Viewport margin before triggering lazy load                                    |
+| `lazy-threshold` | `0`     | Visibility ratio before triggering lazy load (0 to 1)                          |
+| `expose-svg`     | —       | Exposes the inner `<svg>` via `::part()`. Accepts an optional custom part name |
 
 ### State (read-only)
 
-| Attribute | Description |
-|-----------|-------------|
-| `ready` | Present when the SVG has been successfully rendered |
+| Attribute     | Description                                                 |
+| ------------- | ----------------------------------------------------------- |
+| `ready`       | Present when the SVG has been successfully rendered         |
 | `ready-links` | Present when all external stylesheets have finished loading |
 
 Use these attributes to drive CSS transitions or show loading states while the component initializes.
 
 ```css
 svg-isolate {
-    opacity: 0;
-    transition: opacity 0.3s;
+	opacity: 0;
+	transition: opacity 0.3s;
 }
 svg-isolate[ready] {
-    opacity: 1;
+	opacity: 1;
 }
 ```
 
 ```css
 svg-isolate:not([ready-links]) {
-    opacity: 0;
+	opacity: 0;
 }
 svg-isolate[ready-links] {
-    opacity: 1;
+	opacity: 1;
 }
 ```
 
@@ -513,11 +665,10 @@ svg-isolate[ready-links] {
 
 ## Events
 
-| Event | Description |
-|-------|-------------|
-| `ready` | Fired every time an SVG is successfully rendered — on load, on `src`/`srcset` changes, and on srcset candidate swaps |
-| `ready-links` | Fired once when all external stylesheets injected via `links` have finished loading |
-
+| Event         | Description                                                                                                          |
+| ------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `ready`       | Fired every time an SVG is successfully rendered — on load, on `src`/`srcset` changes, and on srcset candidate swaps |
+| `ready-links` | Fired once when all external stylesheets injected via `links` have finished loading                                  |
 
 <br>
 
@@ -528,6 +679,3 @@ svg-isolate[ready-links] {
 ## License
 
 MIT
-
-
-

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>SVG Isolate: srcset and Resizing</title>
+
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+
+        <div class="resized">
+            <svg-isolate 
+                srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w" 
+                responsive
+            ></svg-isolate>
+
+            <div class="scrolled">
+                <p></p>
+                <svg-isolate 
+                    srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w" 
+                    responsive
+                    loading="lazy"
+                ></svg-isolate>
+            </div>
+            
+        </div>
+        <script src="srcript.js" type="module"></script>
+    </body>
+</html>

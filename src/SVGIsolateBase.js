@@ -1,3 +1,4 @@
+import { ComponentStyleSheets } from "./StyleSystem.js";
 import SVGIsolateCache from "./SVGIsolateCache.js";
 
 export class SVGIsolateBase extends HTMLElement {
@@ -33,14 +34,20 @@ export class SVGIsolateBase extends HTMLElement {
         return this.#observers;
     }
 
+
+    /**
+	 * @type {ComponentStyleSheets} Stylesheets to be applied to the component
+	 */
+	static styleSheets = null;
+
     //MARK: define
     /**
      * Define the custom element and add stylesheets to it if not already defined.
      * @param {string} [tagName=this.constructor.DEFAULT_TAG_NAME] - The tag name to define the custom element.
-     * @param {RuleStylesSheets} [stylesSheets={}] Append styles
+     * @param {ComponentStyleSheets} [styleSheets={}] Append styles
      * @returns {void}
      */
-    static define(tagName, stylesSheets = {}){
+    static define(tagName, styleSheets = {}){
 
         tagName ??= this.DEFAULT_TAG_NAME;
 
@@ -52,11 +59,7 @@ export class SVGIsolateBase extends HTMLElement {
             }
 
             //Append styles
-            for(const key of ['links', 'adopted', 'raw']) {
-                if(Array.isArray(stylesSheets[key])){
-                    this.stylesSheets[key].push(...stylesSheets[key]);
-                }
-            }
+            this.styleSheets = new ComponentStyleSheets(styleSheets);
 
             window.customElements.define(tagName, this);
         }
@@ -65,93 +68,7 @@ export class SVGIsolateBase extends HTMLElement {
         }
     };
 
-    //MARK: Styles managment
-    /**
-	 * @type {SVGIsolateStylesSheets} Stylesheets to be applied to the component
-	 */
-	static stylesSheets = { 
-        links: [], 
-        adopted: [], 
-        raw: [] 
-    }
-
-    /**
-     * Applies the given stylesheets to the component.
-     * @param {SVGIsolateStylesSheets} [stylesSheets={}] 
-     * - An object with stylesheets to be applied to the component. It contains three properties: `links`, `adopted`, and `raw`.
-     * @fires ready-links
-     */
-    applyStylesSheets(stylesSheets = {}){
-
-        //Add new styles
-        for(const key of ['links', 'adopted', 'raw']) {
-            if(Array.isArray(stylesSheets[key])){
-                this.constructor.stylesSheets[key].push(...stylesSheets[key]);
-            }
-        }
-
-        //Get styles
-        const {links, adopted, raw} = this.constructor.stylesSheets;
-
-        const $styles = document.createElement('div');
-        $styles.classList.add('styles');
-        $styles.style.display = 'none';
-
-        //Links
-        const linksPromises = links.map((styleSheet) => {
-
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = styleSheet;
-
-            const { promise, resolve, reject } = Promise.withResolvers();
-
-            //If it's already loaded (rare in shadow DOM, but possible)
-            if(link.sheet){
-                resolve({ link, href: styleSheet, status: 'loaded' });
-            }
-            else {
-                link.addEventListener('load', () => resolve({ link, href: styleSheet, status: 'loaded' }));
-                link.addEventListener('error', () => reject({ link, href: styleSheet, status: 'error' }));
-            }
-
-            $styles.append(link);
-
-            return promise;
-        });
-
-        this.removeAttribute('ready-links');
-
-        Promise.allSettled(linksPromises).then((results) => {
-
-            this.dispatchEvent(
-                new CustomEvent('ready-links', {
-                    detail: { results: results.map((r) => r.value || r.reason) },
-                })
-            );
-
-            this.setAttribute('ready-links', '');
-        });
-
-        //Raw css
-        raw.forEach((style) => {
-
-            const styleElement = document.createElement('style');
-            styleElement.textContent = style;
-
-            $styles.append(styleElement);
-        });
-
-        //Clear previous styles
-        this.shadowRoot.querySelector('.styles')?.remove();
-
-        //Add new styles
-        this.shadowRoot.prepend($styles);
-        
-        //Adopted
-        this.shadowRoot.adoptedStyleSheets = adopted;
-    };
-
+    
     //MARK: Fetching
     static async fetchSVG(src, opt = {}){
 
@@ -375,21 +292,6 @@ export class SVGIsolateBase extends HTMLElement {
         this.setAttribute('expose-svg', value === true ? '' : String(value));
     }
 
-    //MARK: SVG Attributes
-    get preserveAspectRatio(){
-        return this.getAttribute('preserveAspectRatio');
-    }
-    set preserveAspectRatio(value){
-        this.#setStringAttribute('preserveAspectRatio', value);
-    }
-
-    get viewBox(){
-        return this.getAttribute('viewBox');
-    }
-    set viewBox(value){
-        this.#setStringAttribute('viewBox', value);
-    }
-
     get width(){
         return this.getAttribute('width');
     }
@@ -416,6 +318,21 @@ export class SVGIsolateBase extends HTMLElement {
             }
             return true;
         });
+    }
+
+    //MARK: SVG Attributes
+    get preserveAspectRatio(){
+        return this.getAttribute('preserveAspectRatio');
+    }
+    set preserveAspectRatio(value){
+        this.#setStringAttribute('preserveAspectRatio', value);
+    }
+
+    get viewBox(){
+        return this.getAttribute('viewBox');
+    }
+    set viewBox(value){
+        this.#setStringAttribute('viewBox', value);
     }
 }
 

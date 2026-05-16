@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>SVG Isolate — sanitize demo</title>
+
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        
+        <h2>Sanitized (script blocked, global styles contained):</h2>
+        <div class="row">
+            <svg-isolate src="./dirty.svg" sanitize expose-svg></svg-isolate>
+            <code></code>
+        </div>
+
+        <h2>Without sanitize (script still won't run, but &lt;script&gt; node stays in DOM):</h2>
+        <div class="row">
+            <svg-isolate src="./dirty.svg"></svg-isolate>
+            <code></code>
+        </div>
+
+        <script src="script.js" type="module"></script>
+    </body>
+</html>
