@@ -30,7 +30,7 @@ svg-isolate {
 	justify-content: center;
 
 	code {
-		outline: 1px dashed blue;
+		outline: 1px dashed rgb(204, 207, 13);
 		padding: 20px;
 		box-sizing: border-box;
 		height: 500px;

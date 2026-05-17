@@ -10,14 +10,17 @@
     <body>
 
         <div class="resized">
-            <svg-isolate 
-                srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w" 
-                responsive
-            ></svg-isolate>
+
+            <div>
+                <svg-isolate id="1"
+                    srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w" 
+                    responsive
+                ></svg-isolate>
+            </div>
 
             <div class="scrolled">
                 <p></p>
-                <svg-isolate 
+                <svg-isolate id="2"
                     srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w" 
                     responsive
                     loading="lazy"

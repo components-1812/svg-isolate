@@ -1,4 +1,8 @@
-import SVGIsolate from "/src/SVGIsolate.js";
+//import SVGIsolate from "/src/SVGIsolate.js";
+
+//mport 'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/index.bundle.min.js';
+import SVGIsolate from 'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/SVGIsolate.min.js';
+
 import DOMPurify from "https://cdn.jsdelivr.net/npm/dompurify@3.4.3/dist/purify.es.mjs";
 
 
@@ -25,22 +29,25 @@ SVGIsolateDebug.sanitize = function(raw){
 }
 
 SVGIsolateDebug.define(null,  {
-    links: ['/dist/SVGIsolate.css']
+    links: [
+        //'/dist/SVGIsolate.css',
+        'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/SVGIsolate.min.css'
+    ]
 });
 
 document.querySelector('svg-isolate[sanitize]')
 .componentStyles.add({
     raw: `
         circle {
-            fill: #5f000d;
+            fill: #cf0822;
         }
         rect {
-            fill: #070070;
+            fill: #3179bd;
             rx: 12px;
         }
         text {
             font-size: 14px;
-            fill: #c5b800;
+            fill: #000000;
             font-family: serif;
         }
     `
