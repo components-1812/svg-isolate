@@ -2,9 +2,36 @@
 
 ![Id collision example](./assets/id-collision.webp)
 
+## Features
+
+- 🔒 **Shadow DOM isolation** — SVG styles and IDs are scoped to the component. No conflicts with the rest of the page.
+- 📦 **Smart caching** — in-memory cache with deduplication. Same URL fetched once, shared across all instances.
+- 🖼️ **srcset support** — serve different SVG files based on the component's rendered width, just like native `<img srcset>`.
+- ⚡ **Loading strategies** — `eager`, `defer`, `idle`, and `lazy` (via `IntersectionObserver`).
+- 🎨 **Flexible styling** — inject CSS into the shadow DOM globally via `define()` or per-instance via `componentStyles`.
+- 🧹 **Optional sanitization** — plug in any sanitizer (e.g. DOMPurify) to clean SVG nodes before rendering.
+- 📐 **Responsive** — automatic candidate swapping on resize via `ResizeObserver`.
+- 🧩 **Extensible** — designed to be subclassed. Override fetching, sanitization, rendering, or defaults.
+
+## Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Custom definition](#custom-definition)
+- [Instance styles](#instance-styles)
+- [Default styles](#default-styles-bundle)
+- [`width` and `height`](#width-and-height)
+- [Cache](#cache)
+- [Loading Strategies](#loading-strategies)
+- [srcset & Responsive](#srcset--responsive)
+- [Sanitize](#sanitize)
+- [Styling the inner SVG](#styling-the-inner-svg)
+- [Attributes](#attributes)
+- [Events](#events)
+
 ## Examples
 
-- [**Codepen Examples**]()
+- [**Codepen Examples**](https://codepen.io/editor/FrancoJavierGadea/pen/019e36d4-e391-785d-acd9-d2b4aff8b63f)
 
 <br>
 
@@ -500,9 +527,67 @@ SVGIsolate.defaults.responsive = true;
 
 <br>
 
+<!--MARK: Sanitize -->
+## Sanitize
+
+`<svg-isolate>` renders SVG files inside a shadow DOM using `DOMParser` and `appendChild`. This means:
+
+- `<script>` tags are **never executed** — the browser does not evaluate scripts inserted via `DOMParser` + `append`.
+- CSS inside `<style>` tags is **encapsulated** by the shadow DOM — selectors like `body`, `p`, or `div` cannot escape and affect the rest of the page.
+
+Sanitization is therefore not required for security in most cases. Its purpose is to **clean up the SVG DOM** — removing nodes like `<script>`, `<style>`, or inline `style` attributes that you don't want present in the shadow root, even if they are inert.
+
+---
+
+### `SVGIsolate.sanitize` — static function
+
+Set a static sanitizer function before any component renders. It receives the raw SVG string and returns the cleaned string. If not set, sanitization is skipped even when the `sanitize` attribute is present.
+
+```js
+import DOMPurify from "https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.es.mjs";
+
+SVGIsolate.sanitize = (raw) => {
+    return DOMPurify.sanitize(raw, {
+        USE_PROFILES: { svg: true },
+        FORBID_TAGS: ['style', 'script'],
+        FORBID_ATTR: ['style'],
+    });
+};
+```
+
+The sanitizer runs after the fetch and before `renderSVG`, so the cache always stores the raw unsanitized string.
+
+---
+
+### `sanitize` — instance attribute and property
+
+Controls whether the sanitizer is applied to a specific instance. Has no effect if `SVGIsolate.sanitize` is not set.
+
+```html
+<!-- sanitize this instance -->
+<svg-isolate src="icon.svg" sanitize />
+
+<!-- leave this one unsanitized -->
+<svg-isolate src="icon.svg" />
+```
+
+```js
+el.sanitize = true;
+el.sanitize = false;
+```
+
+### Enabling by default
+
+To sanitize all instances without adding the attribute to each one:
+
+```js
+SVGIsolate.defaults.sanitize = true;
+```
+
+<br>
+
 
 <!-- MARK: Styling the inner SVG -->
-
 ## Styling the inner SVG
 
 The SVG rendered inside `<svg-isolate>` lives in a shadow DOM, so external CSS cannot reach it directly. The component provides a few ways to interact with it.
