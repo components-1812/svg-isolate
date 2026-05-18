@@ -105,6 +105,12 @@ export class SVGIsolate extends SVGIsolateBase {
 
 
     //MARK: Loading
+    #currentSource = null;
+
+    get currentSource(){
+        return this.#currentSource;
+    }
+
     async loadSVG(src){
 
         if(!src){
@@ -112,15 +118,18 @@ export class SVGIsolate extends SVGIsolateBase {
             return;
         }
 
+        console.log(src);
+
         this.removeAttribute('ready');
 
-        src = this.constructor.resolveSource(src, this.base).href;
+        const resolved = this.constructor.resolveSource(src, this.base);
+        this.#currentSource = { raw: src, resolved };
        
         try {
             // Use in-memory cache if enabled to avoid redundant fetches
             let raw = this.useCache
-                ? await this.constructor.CACHE.fetchSVG(src)
-                : await this.constructor.fetchSVG(src);
+                ? await this.constructor.CACHE.fetchSVG(resolved.href)
+                : await this.constructor.fetchSVG(resolved.href);
 
             if(!raw) return;
 
@@ -146,7 +155,6 @@ export class SVGIsolate extends SVGIsolateBase {
                 break;
 
             case this.src != null:
-                this.#currentSource = this.sources.src;
                 this.#loadByStrategy({src: this.src});
                 break;
         
@@ -248,11 +256,6 @@ export class SVGIsolate extends SVGIsolateBase {
         return sorted.at(-1);
     }
 
-    #currentSource = null;
-
-    get currentSource(){
-        return this.#currentSource;
-    }
 
     #watchSrcset() {
 
@@ -267,10 +270,9 @@ export class SVGIsolate extends SVGIsolateBase {
 
             const source = this.constructor.matchSource(this.sources.srcset, width);
 
-            if(source && source.resolved.href !== this.#currentSource?.resolved.href) {
+            if(source && ref.src !== source.raw) {
 
-                this.#currentSource = source;
-                ref.src = source.resolved.href;
+                ref.src = source.raw;
 
                 this.#loadByStrategy(ref);
             }
