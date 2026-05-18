@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVGIsolate: No Cache Example</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="row">
+        <svg-isolate src="/assets/circle.svg" base="/docs"></svg-isolate>
+
+        <svg-isolate src="/hexagon.svg" base="/docs/assets"></svg-isolate>
+
+        <svg-isolate src="../../assets/triangle.svg" base="/"></svg-isolate>
+
+        <svg-isolate src="/heart.svg" base="../../assets"></svg-isolate>
+    </div>
+
+
+
+    <div class="row">
+        <bootstrap-icon-svg src="/0-circle.svg"></bootstrap-icon-svg>
+
+        <bootstrap-icon-svg src="/1-circle.svg"></bootstrap-icon-svg>
+
+        <bootstrap-icon-svg src="/2-circle.svg"></bootstrap-icon-svg>
+
+        <bootstrap-icon-svg src="/3-circle.svg"></bootstrap-icon-svg>
+    </div>
+
+    <div class="resized">
+
+        <svg-isolate
+            srcset="
+                /solid/arrow-down-circle.svg 200w,
+                /solid/arrow-path.svg 400w,
+                /solid/bars-2.svg 600w,
+                /outline/cake.svg 800w,
+                /outline/check.svg 1000w,
+                /outline/cpu-chip.svg 1200w
+            "
+            base="https://raw.githubusercontent.com/tailwindlabs/heroicons/refs/heads/master/optimized/24/"
+            responsive
+        ></svg-isolate>
+    </div>
+
+    <div id="fetch-log">
+        <h3>Fetching LOG:</h3>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>

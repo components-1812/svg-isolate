@@ -42,7 +42,7 @@
     "main": "./dist/SVGIsolate.js",
     "style": "./dist/SVGIsolate.css",
     "devDependencies": {
-        "esbuild": "^0.25.9"
+        "esbuild": "^0.28.0"
     },
     "scripts": {
         "build": "node build.js"

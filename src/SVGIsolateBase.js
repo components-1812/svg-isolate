@@ -23,7 +23,8 @@ export class SVGIsolateBase extends HTMLElement {
         sanitize: false,
         useCache: true,
         responsive: false,
-        exposeSVG: false
+        exposeSVG: false,
+        base: '/'
     }
 
     static sanitize = null;
@@ -33,7 +34,6 @@ export class SVGIsolateBase extends HTMLElement {
     get observers(){
         return this.#observers;
     }
-
 
     /**
 	 * @type {ComponentStyleSheets} Stylesheets to be applied to the component
@@ -99,6 +99,24 @@ export class SVGIsolateBase extends HTMLElement {
             console.warn(`SVG fetch failed for "${src}":`, error);
             return null;
         }
+    }
+
+    //MARK: resolveSource
+    static resolveSource(src, base){
+
+        if(!src) return null;
+
+        const Src = new URL(src, document.baseURI);
+        
+        // No prefix base, default base (/), or src is already an absolute URL
+        if(!base  || base === '/' || URL.canParse(src)) return Src;
+        
+        const Base = new URL(base, document.baseURI);
+
+        const basePath = Base.pathname.replace(/\/+$/, '');
+        const srcPath = Src.pathname.replace(/^\/+/, '');
+
+        return new URL(`${basePath}/${srcPath}${Src.search}${Src.hash}`, Base.origin);
     }
 
     //MARK: loading
@@ -174,16 +192,17 @@ export class SVGIsolateBase extends HTMLElement {
     //MARK: sources
     get sources(){
 
-        const base = document.baseURI;
-
         const result = {
-            default: this.src ? new URL(this.src, base) : null,
-            candidates: []
+            src: {
+                raw: this.src,
+                resolved: this.constructor.resolveSource(this.src, this.base)
+            },
+            srcset: []
         };
 
         if(this.srcset){
 
-            result.candidates = this.srcset.split(',')
+            result.srcset = this.srcset.split(',')
             .map(candidate => {
 
                 candidate = candidate.trim();
@@ -192,7 +211,7 @@ export class SVGIsolateBase extends HTMLElement {
                     const lastSpace = candidate.lastIndexOf(' ');
                     const descriptor = lastSpace !== -1 ? candidate.slice(lastSpace + 1) : null;
     
-                    let url, width;
+                    let url, width = 0;
     
                     if(descriptor?.endsWith('w')) {
 
@@ -202,10 +221,14 @@ export class SVGIsolateBase extends HTMLElement {
                     else {
                         // no descriptor — entire string is the URL
                         url = candidate.trim();
-                        width = 0;
+                        width;
                     }
     
-                    return { url: new URL(url, base), width };
+                    return { 
+                        raw: url,
+                        resolved: this.constructor.resolveSource(url, this.base), 
+                        width 
+                    };
                 }
                 catch(error) {
                     return null;
@@ -277,6 +300,17 @@ export class SVGIsolateBase extends HTMLElement {
             return;
         }
         this.setAttribute('lazy-threshold', value);
+    }
+
+    set base(value){
+        if(value == null){
+            this.removeAttribute('base');
+            return;
+        }
+        this.setAttribute('base', String(value));
+    }
+    get base(){
+        return this.getAttribute('base') ?? this.constructor.defaults.base;
     }
 
     //MARK: exposeSVG

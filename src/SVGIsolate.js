@@ -107,8 +107,15 @@ export class SVGIsolate extends SVGIsolateBase {
     //MARK: Loading
     async loadSVG(src){
 
+        if(!src){
+            console.warn(`SVG load failed: No source provided.`)
+            return;
+        }
+
         this.removeAttribute('ready');
 
+        src = this.constructor.resolveSource(src, this.base).href;
+       
         try {
             // Use in-memory cache if enabled to avoid redundant fetches
             let raw = this.useCache
@@ -139,6 +146,7 @@ export class SVGIsolate extends SVGIsolateBase {
                 break;
 
             case this.src != null:
+                this.#currentSource = this.sources.src;
                 this.#loadByStrategy({src: this.src});
                 break;
         
@@ -225,7 +233,7 @@ export class SVGIsolate extends SVGIsolateBase {
 
 
     //MARK: Srcset and Responsive management
-    static resolveSource(candidates = [], width){
+    static matchSource(candidates = [], width){
 
         if(candidates.length === 0) return null;
 
@@ -240,6 +248,12 @@ export class SVGIsolate extends SVGIsolateBase {
         return sorted.at(-1);
     }
 
+    #currentSource = null;
+
+    get currentSource(){
+        return this.#currentSource;
+    }
+
     #watchSrcset() {
 
         /**
@@ -247,15 +261,18 @@ export class SVGIsolate extends SVGIsolateBase {
          * Passed by reference to loading strategies so that lazy loading
          * always reads the latest value at the moment the element enters the viewport.
          */
-        const currentSource = { src: null };
+        const ref = { src: null };
 
         const onResize = (width) => {
 
-            const source = this.constructor.resolveSource(this.sources.candidates, width);
+            const source = this.constructor.matchSource(this.sources.srcset, width);
 
-            if(source && source.url.href !== currentSource.src) {
-                currentSource.src = source.url.href;
-                this.#loadByStrategy(currentSource);
+            if(source && source.resolved.href !== this.#currentSource?.resolved.href) {
+
+                this.#currentSource = source;
+                ref.src = source.resolved.href;
+
+                this.#loadByStrategy(ref);
             }
 
             if(!this.responsive) {
