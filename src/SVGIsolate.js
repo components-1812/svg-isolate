@@ -304,6 +304,8 @@ export class SVGIsolate extends SVGIsolateBase {
         const svg = this.shadowRoot.querySelector('svg');
         if(svg) svg.remove();
 
+        this.#currentSource = null;
+
         this.removeAttribute('ready');
     }
 }

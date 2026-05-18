@@ -13,7 +13,7 @@ function LOG(url, src, base){
     div.classList.add('log');
 
     div.innerHTML = /*html*/`
-        <p>Fetching: <a href="${url}">${url}</a></p>
+        <p>Fetching: <a href="${url}" target="_blank">${url}</a></p>
         <p>src: <span>${src}</span> base: <span>${base}</span></p>
     `;
 
@@ -49,7 +49,7 @@ class BootstrapIconsSVG extends SVGIsolate {
 
     loadSVG(src){
         super.loadSVG(src);
-        
+
         const {raw, resolved} = this.currentSource;
         LOG(resolved, raw, this.base);
     }
