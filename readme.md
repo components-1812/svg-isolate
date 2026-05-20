@@ -8,6 +8,7 @@
 - 📦 **Smart caching** — in-memory cache with deduplication. Same URL fetched once, shared across all instances.
 - 🖼️ **srcset support** — serve different SVG files based on the component's rendered width, just like native `<img srcset>`.
 - ⚡ **Loading strategies** — `eager`, `defer`, `idle`, and `lazy` (via `IntersectionObserver`).
+- 🔗 **Base URL** — resolve src against a configurable base path or CDN URL. Set per-element or globally via defaults.
 - 🎨 **Flexible styling** — inject CSS into the shadow DOM globally via `define()` or per-instance via `componentStyles`.
 - 🧹 **Optional sanitization** — plug in any sanitizer (e.g. DOMPurify) to clean SVG nodes before rendering.
 - 📐 **Responsive** — automatic candidate swapping on resize via `ResizeObserver`.
@@ -770,7 +771,6 @@ This approach works for any CSS property regardless of shadow DOM encapsulation.
 | Attribute             | Description                                                                                         |
 | --------------------- | --------------------------------------------------------------------------------------------------- |
 | `src`                 | Path to the SVG file. Triggers a reload when changed. Ignored if `srcset` is present                |
-| `base`                | Base path or URL to prepend to the `src`.                                                           |
 | `srcset`              | Comma-separated srcset candidates. Takes priority over `src`. Triggers a reload when changed        |
 | `preserveAspectRatio` | Forwarded directly to the inner `<svg>` without triggering a reload                                 |
 | `viewBox`             | Forwarded directly to the inner `<svg>` without triggering a reload                                 |
@@ -781,6 +781,7 @@ This approach works for any CSS property regardless of shadow DOM encapsulation.
 
 | Attribute        | Default | Description                                                                    |
 | ---------------- | ------- | ------------------------------------------------------------------------------ |
+| `base`           | `/`     | Base path or URL to prepend to the `src`.                                      |
 | `loading`        | `eager` | Loading strategy. One of `eager`, `defer`, `idle`, `lazy`                      |
 | `responsive`     | `false` | Enables automatic candidate swapping on resize                                 |
 | `no-cache`       | `false` | Disables in-memory caching for this instance                                   |
@@ -794,7 +795,7 @@ This approach works for any CSS property regardless of shadow DOM encapsulation.
 | Attribute     | Description                                                                   |
 | ------------- | ----------------------------------------------------------------------------- |
 | `fetching`    | Present while the SVG is being fetched. Removed once the fetch completes      |
-| `ready`       | Present when the SVG has been successfully rendered                            |
+| `ready`       | Present when the SVG has been successfully rendered                           |
 | `ready-links` | Present when all external stylesheets have finished loading                   |
 
 Use these attributes to drive CSS transitions or show loading states while the component initializes.

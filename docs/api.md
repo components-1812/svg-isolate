@@ -1,6 +1,44 @@
 # SVGIsolate
 
-A web component that loads, caches, and renders SVG files in an isolated shadow DOM. Supports multiple loading strategies, srcset-based responsive images, in-memory caching, and optional sanitization.
+A web component that loads, caches, and renders SVG files in an isolated shadow DOM. Supports multiple loading strategies, srcset-based responsive images, base URL resolution, in-memory caching, and optional sanitization.
+
+---
+
+## Loading Flow
+
+```mermaid
+flowchart TD
+    Entry["connectedCallback\nattributeChangedCallback [src, srcset]"]
+    Entry --> loadSource
+
+    loadSource["#loadSource\n─ clear() on every call except the first ─"]
+    loadSource --> branch{Which source?}
+
+    branch -- srcset --> watchSrcset["#watchSrcset\nResizeObserver"]
+    watchSrcset --> resize["onResize(width)\nmatchSource(sources.srcset, width)"]
+    resize --> strategy
+
+    branch -- src --> strategy["#loadByStrategy\neager | defer | idle | lazy"]
+
+    branch -- neither --> lightDOM["light DOM SVG\nquerySelector('svg')"]
+    lightDOM --> renderSVG
+
+    strategy --> loadSVG["#loadSVG(src)"]
+    loadSVG --> resolve["resolveSource(src, base)\n→ resolved URL"]
+    resolve --> fetch["fetchSVG(resolved)\ncache | network"]
+    fetch --> san{sanitize?}
+    san -- yes --> sanitize["SVGIsolate.sanitize(rawSvg)"]
+    sanitize --> renderSVG["#renderSVG(svg)"]
+    san -- no --> renderSVG
+
+    renderSVG --> events["removeAttribute('fetching')\nsetAttribute('ready')\ndispatchEvent('ready')"]
+```
+
+> **Notes**
+> - `clear()` is skipped on the very first `connectedCallback` call.
+> - `src` passed to `#loadSVG` is always the **raw attribute value** — `resolveSource(src, base)` is called inside `#loadSVG` to produce the final URL.
+> - `sanitize` only runs if `SVGIsolate.sanitize` is set **and** the `sanitize` attribute is present on the instance.
+> - `currentSource` is set after a successful render and always reflects the currently displayed SVG.
 
 ---
 
@@ -53,6 +91,7 @@ SVGIsolate.defaults = {
 	useCache: true,
 	responsive: false,
 	exposeSVG: false,
+	base: "/",
 };
 ```
 
@@ -116,23 +155,51 @@ const sanitized = await SVGIsolate.fetchSVG("/assets/icon.svg", {
 
 ---
 
-#### `resolveSource(candidates, width)`
+#### `resolveSource(src, base)`
 
-Returns the best candidate from a srcset candidates array for the given width. Picks the smallest candidate whose intrinsic width covers the given width. If the width exceeds all candidates, returns the largest.
+Resolves a `src` value against a `base` URL using the same algorithm the component uses internally when loading SVGs.
 
-| Parameter    | Type                                 | Description                                                      |
-| ------------ | ------------------------------------ | ---------------------------------------------------------------- |
-| `candidates` | `Array<{ url: URL, width: number }>` | Parsed srcset candidates, typically from `el.sources.candidates` |
-| `width`      | `number`                             | Target width in pixels                                           |
+| Parameter | Type             | Description                                                                        |
+| --------- | ---------------- | ---------------------------------------------------------------------------------- |
+| `src`     | `string`         | The raw source value — may be absolute, root-relative, or relative                 |
+| `base`    | `string \| null` | Base path or URL to resolve against. If `null` or `"/"`, `document.baseURI` is used |
 
-Returns `{ url: URL, width: number } | null`.
+Returns `{ resolved: URL, parts: { origin, basePath, srcPath, search, hash } } | null`.
+
+- If `src` is `null`, returns `null`.
+- If `src` is an absolute URL, `base` is ignored and `src` is returned as-is.
+- If `base` is `null`, `"/"`, or not provided, `src` is resolved against `document.baseURI`.
 
 ```js
-const { candidates } = el.sources;
-const best = SVGIsolate.resolveSource(candidates, 450);
+SVGIsolate.resolveSource("/icons/circle.svg", "/docs");
+// {
+//   resolved: URL { href: 'http://127.0.0.1:3000/docs/icons/circle.svg' },
+//   parts: { origin: '...', basePath: '/docs', srcPath: '/icons/circle.svg', search: '', hash: '' }
+// }
 
-console.log(best.url.href); // 'icon-600.svg'
-console.log(best.width); // 600
+SVGIsolate.resolveSource("https://cdn.example.com/icon.svg", "/docs");
+// { resolved: URL { href: 'https://cdn.example.com/icon.svg' }, ... }  ← base ignored
+```
+
+---
+
+#### `matchSource(candidates, width)`
+
+Selects the best candidate from a parsed srcset array for a given display width. Picks the smallest candidate whose intrinsic width covers the target width. If no candidate is large enough, returns the largest as a fallback.
+
+| Parameter    | Type                                              | Description                                    |
+| ------------ | ------------------------------------------------- | ---------------------------------------------- |
+| `candidates` | `Array<{ raw: string, resolved: URL, width: number }>` | Parsed srcset candidates (e.g. from `el.sources.srcset`) |
+| `width`      | `number`                                          | Target display width in pixels                 |
+
+Returns `{ raw: string, resolved: URL, width: number } | null`.
+
+```js
+const best = SVGIsolate.matchSource(el.sources.srcset, 450);
+// candidates: 300w, 600w, 900w → picks 600w (smallest that covers 450px)
+
+console.log(best.resolved.href); // 'https://example.com/icon-600.svg'
+console.log(best.width);         // 600
 ```
 
 <br>
@@ -145,7 +212,9 @@ console.log(best.width); // 600
 | --------------------- | --------------------------- | --------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `src`                 | `string \| null`            | `src`                 | `null`    | URL of the SVG file to load                                                                                                     |
 | `srcset`              | `string \| null`            | `srcset`              | `null`    | Comma-separated list of SVG candidates with width descriptors                                                                   |
+| `base`                | `string`                    | `base`                | `"/"`     | Base path or URL used to resolve `src`. Falls back to `defaults.base` when the attribute is not set                             |
 | `sources`             | `object`                    | —                     | —         | Parsed `src` and `srcset` as structured URL objects. Read-only                                                                  |
+| `currentSource`       | `{ raw: string, resolved: URL } \| null` | —        | `null`    | The source that is currently rendered. `null` until the first successful load. Read-only                                        |
 | `loading`             | `string`                    | `loading`             | `'eager'` | Loading strategy. One of `eager`, `defer`, `idle`, `lazy`                                                                       |
 | `useCache`            | `boolean`                   | `no-cache`            | `true`    | Whether to use the in-memory cache for this instance                                                                            |
 | `sanitize`            | `boolean`                   | `sanitize`            | `false`   | Whether to sanitize the SVG before rendering                                                                                    |
@@ -162,45 +231,28 @@ console.log(best.width); // 600
 
 ### `sources`
 
-Read-only computed property that parses `src` and `srcset` into structured objects with absolute URLs. Useful when you need to inspect or work with the resolved URLs programmatically.
+Read-only computed property that parses `src` and `srcset` into structured objects with resolved URLs.
 
-| Field        | Type                                 | Description                                                                                                                                                                                                          |
-| ------------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `default`    | `URL \| null`                        | Resolved absolute URL from the `src` attribute. `null` if `src` is not set                                                                                                                                           |
-| `candidates` | `Array<{ url: URL, width: number }>` | Parsed candidates from `srcset` in declaration order. Each entry contains the resolved absolute URL and the intrinsic width in pixels from the `w` descriptor. Candidates without a descriptor default to `width: 0` |
+| Field    | Type                                                    | Description                                                                                                                                                             |
+| -------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src`    | `{ raw: string \| null, resolved: URL \| null }`        | Parsed `src` attribute. `raw` is the attribute value as-is, `resolved` is the absolute URL after applying `base`                                                        |
+| `srcset` | `Array<{ raw: string, resolved: URL, width: number }>` | Parsed `srcset` candidates in declaration order. Each entry contains the raw value, the resolved absolute URL (with `base` applied), and the width from the `w` descriptor |
 
 ```js
-// Given:
-// src="icon.svg"
-// srcset="/assets/icon-300.svg 300w, /assets/icon-600.svg 600w"
+// src="icon.svg" base="/assets"
+// srcset="/icons/icon-300.svg 300w, /icons/icon-600.svg 600w"
 
 el.sources;
 // {
-//   default: URL { href: 'https://example.com/icon.svg', ... },
-//   candidates: [
-//     { url: URL { href: 'https://example.com/assets/icon-300.svg', ... }, width: 300 },
-//     { url: URL { href: 'https://example.com/assets/icon-600.svg', ... }, width: 600 },
+//   src: {
+//     raw: 'icon.svg',
+//     resolved: URL { href: 'http://example.com/assets/icon.svg' }
+//   },
+//   srcset: [
+//     { raw: '/icons/icon-300.svg', resolved: URL { href: '...' }, width: 300 },
+//     { raw: '/icons/icon-600.svg', resolved: URL { href: '...' }, width: 600 },
 //   ]
 // }
-```
-
-Both `default` and candidate URLs are resolved against `document.baseURI`, so relative paths are always returned as absolute URLs.
-
-```js
-// relative src
-el.src = "icons/arrow.svg";
-el.sources.default.href; // 'https://example.com/icons/arrow.svg'
-```
-
-Candidates without a **width descriptor** default to `0`:
-
-```js
-// srcset="icon-fallback.svg, icon-300.svg 300w"
-el.sources.candidates;
-// [
-//   { url: URL { href: '...icon-fallback.svg' }, width: 0 },
-//   { url: URL { href: '...icon-300.svg' },      width: 300 },
-// ]
 ```
 
 Malformed candidates are silently dropped — the rest of the candidates remain unaffected.
@@ -211,18 +263,21 @@ Malformed candidates are silently dropped — the rest of the candidates remain 
 
 ## Instance Methods
 
-#### `loadSVG(src)`
+#### `loadSVG(src, opt?)`
 
-Fetches and renders an SVG from the given URL. Respects `useCache` and `sanitize` settings.
+Fetches and renders an SVG from the given URL. Respects the current `useCache` and `sanitize` settings unless overridden via `opt`.
 
-| Parameter | Type     | Description                 |
-| --------- | -------- | --------------------------- |
-| `src`     | `string` | URL of the SVG file to load |
+| Parameter      | Type      | Default | Description                                                         |
+| -------------- | --------- | ------- | ------------------------------------------------------------------- |
+| `src`          | `string`  | —       | URL of the SVG file to load (set as the `src` attribute)            |
+| `opt.base`     | `string`  | —       | Override the `base` attribute for this load                         |
+| `opt.useCache` | `boolean` | —       | Override the `useCache` setting for this load                       |
 
-Returns `Promise<void>`.
+Returns `void`.
 
 ```js
-await el.loadSVG("/assets/icon.svg");
+el.loadSVG("/assets/icon.svg");
+el.loadSVG("circle.svg", { base: "https://cdn.example.com/icons" });
 ```
 
 ---
@@ -247,14 +302,14 @@ el.renderSVG(node);
 
 ---
 
-#### `dispose()`
+#### `clear()`
 
-Disconnects all active observers, removes the rendered SVG from the shadow DOM, and resets the `ready` state. Called automatically on `disconnectedCallback`.
+Disconnects all active observers, removes the rendered SVG from the shadow DOM, and resets `currentSource` and the `ready` attribute. Called automatically before every new load and on `disconnectedCallback`.
 
 Returns `void`.
 
 ```js
-el.dispose();
+el.clear();
 ```
 
 <br>
@@ -280,6 +335,7 @@ Changes to these attributes are observed and trigger the component to update aut
 
 | Attribute        | Type                | Default | Description                                                                                      |
 | ---------------- | ------------------- | ------- | ------------------------------------------------------------------------------------------------ |
+| `base`           | `string`            | `/`     | Base path or URL used to resolve `src`. See [Base URL](#base-url)                                |
 | `loading`        | `string`            | `eager` | Loading strategy. One of `eager`, `defer`, `idle`, `lazy`                                        |
 | `responsive`     | `boolean`           | `false` | Enables automatic candidate swapping on resize                                                   |
 | `no-cache`       | `boolean`           | `false` | Disables in-memory caching for this instance                                                     |
@@ -292,10 +348,11 @@ Changes to these attributes are observed and trigger the component to update aut
 
 Set by the component to reflect its current state. Read-only.
 
-| Attribute     | Description                                                 |
-| ------------- | ----------------------------------------------------------- |
-| `ready`       | Present when the SVG has been successfully rendered         |
-| `ready-links` | Present when all external stylesheets have finished loading |
+| Attribute     | Description                                                                  |
+| ------------- | ---------------------------------------------------------------------------- |
+| `fetching`    | Present while the SVG is being fetched. Removed once the fetch completes     |
+| `ready`       | Present when the SVG has been successfully rendered                          |
+| `ready-links` | Present when all external stylesheets have finished loading                  |
 
 ---
 
@@ -303,13 +360,29 @@ Set by the component to reflect its current state. Read-only.
 
 ## Events
 
-#### `ready`
+#### `fetching`
 
-Fired when the SVG has been successfully rendered into the shadow DOM.
+Fired before each fetch begins — on load, on `src`/`srcset` changes, and on srcset candidate swaps.
+
+| Property          | Type     | Description                                              |
+| ----------------- | -------- | -------------------------------------------------------- |
+| `detail.src`      | `string` | The raw value from the `src`/`srcset` attribute          |
+| `detail.resolved` | `URL`    | Fully resolved URL object passed to the fetch            |
 
 ```js
-el.addEventListener("ready", () => {
-	console.log("SVG rendered");
+el.addEventListener("fetching", ({ detail }) => {
+	console.log(detail.src);          // 'circle.svg'
+	console.log(detail.resolved.href); // 'https://cdn.example.com/icons/circle.svg'
+});
+```
+
+#### `ready`
+
+Fired when the SVG has been successfully rendered into the shadow DOM. No `detail`.
+
+```js
+el.addEventListener("ready", (e) => {
+	const svg = e.target.shadowRoot.querySelector("svg");
 });
 ```
 
@@ -320,13 +393,14 @@ Fired when all external stylesheets injected via `links` have finished loading.
 | Property                  | Type                  | Description                     |
 | ------------------------- | --------------------- | ------------------------------- |
 | `detail.results`          | `Array`               | Load result for each stylesheet |
+| `detail.results[].link`   | `HTMLLinkElement`     | The `<link>` element            |
 | `detail.results[].href`   | `string`              | Stylesheet URL                  |
 | `detail.results[].status` | `'loaded' \| 'error'` | Load result                     |
 
 ```js
 el.addEventListener("ready-links", ({ detail }) => {
 	console.log(detail.results);
-	// [{ href: '/styles.css', status: 'loaded' }, ...]
+	// [{ link: <HTMLLinkElement>, href: '/styles.css', status: 'loaded' }, ...]
 });
 ```
 
@@ -428,17 +502,26 @@ MyIcon.define("my-icon");
 
 ### Custom defaults
 
+Use `static defaults` to change the default behavior of all instances of a subclass. Always spread `super.defaults` to preserve the base class defaults.
+
 ```js
 class MyIcon extends SVGIsolate {
 	static defaults = {
-		...SVGIsolate.defaults,
+		...super.defaults,
 		loading: "lazy",
 		responsive: true,
 		sanitize: true,
+		base: "https://cdn.example.com/icons",
 	};
 }
 
 MyIcon.define("my-icon");
 ```
+
+Now every `<my-icon>` resolves `src` against the CDN without needing a `base` attribute on each element:
+
+```html
+<my-icon src="circle.svg"></my-icon>
+<!-- → https://cdn.example.com/icons/circle.svg -->
 
 Each subclass gets its own independent cache instance — two subclasses pointing to the same URL will not share cached results.
