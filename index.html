@@ -4,65 +4,13 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>SVG Isolate — Examples</title>
-        <style>
-            * {
-                margin: 0; 
-                padding: 0;
-            }
-            :root {
-                color-scheme: dark; 
-            }
-            body {
-                font-family: Consolas, Monaco, monospace;
-                letter-spacing: 1px;
-                padding: 60px 40px;
-                max-width: 600px;
-                margin: auto;
-            }
-
-            h1 {
-                font-size: clamp(1.5em, 5vw, 2em);
-                text-align: center;
-                margin-bottom: 50px;
-            }
-
-            ul {
-                list-style: none;
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-
-                a {
-                    display: flex;
-                    align-items: baseline;
-                    gap: 12px;
-
-                    padding: 10px 14px;
-                    border-radius: 6px;
-
-                    text-decoration: none;
-                    font-size: 14pt;
-
-                    transition: background .15s;
-
-                    color: #fff;
-
-                    &:hover {
-                        background: #3f3f3f;
-                    }
-
-                    .desc {
-                        color: #7a7a7a;
-                        font-size: 12pt;
-                        margin-left: auto;
-                    }
-                }
-            }
-        </style>
+        <link rel="stylesheet" href="style.css">
     </head>
     <body>
 
-        <h1>svg-isolate  examples</h1>
+        <h1>
+           <span>&lt;svg-isolate/&gt;</span> examples
+        </h1>
 
         <ul>
             <li>
@@ -98,19 +46,19 @@
             <li>
                 <a href="/svg-isolate/examples/base/index.html">
                     <span>base</span>
-                    <span class="desc"></span>
+                    <span class="desc">core usage · minimal setup</span>
                 </a>
             </li>
             <li>
-                <a href="/svg-isolate/examples/base-test/index.html">
-                    <span>base-test</span>
-                    <span class="desc"></span>
+                <a href="/svg-isolate/examples/base-playground/index.html">
+                    <span>base-playground</span>
+                    <span class="desc">interactive demo · examples</span>
                 </a>
             </li>
             <li>
                 <a href="/svg-isolate/examples/state-attributes/index.html">
                     <span>state-attributes</span>
-                    <span class="desc"></span>
+                    <span class="desc">state-driven SVG: fetching - ready - ready-links</span>
                 </a>
             </li>
         </ul>
