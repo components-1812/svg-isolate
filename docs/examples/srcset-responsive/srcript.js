@@ -4,19 +4,23 @@ import SVGIsolate from "/src/SVGIsolate.js";
 //import SVGIsolate from 'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/SVGIsolate.min.js';
 
 
-class SVGIsolateDebug extends SVGIsolate {
+[
+    ...document.querySelectorAll('svg-isolate'),
+]
+.forEach(svg => {
 
-    loadSVG(src){
+    svg.addEventListener('fetching', (e) => {
 
-        console.log(`Loading: ${src} to ${this.id}`);
+        const {resolved, src} = e.detail;
+        const id = e.target.id;
+        
+        console.log(`Loading: ${src} to component ${id}`);
+    })
+});
 
-        super.loadSVG(src);
-    }
-}
+SVGIsolate.defaults.base = '/docs';
 
-SVGIsolateDebug.defaults.base = '/docs';
-
-SVGIsolateDebug.define(null, {
+SVGIsolate.define(null, {
     links: [
         'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/SVGIsolate.min.css',
         //'/src/SVGIsolate.css'
@@ -39,5 +43,3 @@ document.querySelectorAll('div.resized').forEach(resized => {
     
     observer.observe(resized);
 });
-
-window.SVGIsolate = SVGIsolateDebug;

@@ -1,0 +1,87 @@
+[
+	{
+		"src": "https://raw.example.com/twbs/icons/circle.svg",
+		"base": "/docs",
+		"desc": "Absolute URL src, base is ignored"
+	},
+	{
+		"src": "/assets/circle.svg",
+		"base": "/docs",
+		"desc": "Root-relative src treated relative to base path"
+	},
+	{
+		"src": "/hexagon.svg",
+		"base": "/docs/assets",
+		"desc": "Root-relative src appended to subfolder base"
+	},
+	{
+		"src": "../../assets/triangle.svg",
+		"base": "/",
+		"desc": "Default Base"
+	},
+	{
+		"src": "/heart.svg",
+		"base": "../../assets",
+		"desc": "Root-relative src with relative directory base"
+	},
+	{
+		"src": "/0-circle.svg",
+		"base": "https://raw.example.com",
+		"desc": "Root-relative src with absolute domain base"
+	},
+	{
+		"src": "/0-circle.svg",
+		"base": "https://raw.example.com/twbs/icons/",
+		"desc": "Root-relative src with absolute path base"
+	},
+	{
+		"src": "circle.svg",
+		"base": "/",
+		"desc": "Relative src with default base"
+	},
+	{
+		"src": "./circle.svg",
+		"base": "/",
+		"desc": "Explicit current-dir src with default base"
+	},
+	{
+		"src": "circle.svg",
+		"base": ".",
+		"desc": "Duplicate path due to relative base '.'"
+	},
+	{
+		"src": ".",
+		"base": "/docs",
+		"desc": "Relative directory src with path base"
+	},
+	{
+		"src": "./assets/circle.svg",
+		"base": "/docs",
+		"desc": "Relative subfolder src with path base"
+	},
+	{
+		"src": "..",
+		"base": "/docs",
+		"desc": "Parent directory src with path base"
+	},
+	{
+		"src": "../../../assets/circle.svg",
+		"base": "/docs",
+		"desc": "Root-relative nested src with path base"
+	},
+	{
+		"src": "assets/circle?format=svg&width=150",
+		"base": "/docs",
+		"desc": "With query params"
+	},
+	{
+		"src": "assets/circle?#svg",
+		"base": "/docs",
+		"desc": "With hash"
+	},
+	{
+		"src": "assets/circle?width=150&height=150#svg",
+		"base": "/docs",
+		"desc": "With query params and hash"
+	}
+]

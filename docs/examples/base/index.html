@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SVGIsolate: No Cache Example</title>
+    <title>SVGIsolate: Base URL Remapping</title>
 
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <h1>Base URL Remapping</h1>
 
     <div class="row">
         <svg-isolate src="/assets/circle.svg" base="/docs"></svg-isolate>
@@ -18,8 +20,6 @@
 
         <svg-isolate src="/heart.svg" base="../../assets"></svg-isolate>
     </div>
-
-
 
     <div class="row">
         <bootstrap-icon-svg src="/0-circle.svg"></bootstrap-icon-svg>

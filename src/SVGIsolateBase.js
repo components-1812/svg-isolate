@@ -31,14 +31,14 @@ export class SVGIsolateBase extends HTMLElement {
 
     #observers = new Map();
 
-    get observers(){
+    get observers() {
         return this.#observers;
     }
 
     /**
-	 * @type {ComponentStyleSheets} Stylesheets to be applied to the component
-	 */
-	static styleSheets = null;
+     * @type {ComponentStyleSheets} Stylesheets to be applied to the component
+     */
+    static styleSheets = null;
 
     //MARK: define
     /**
@@ -47,14 +47,14 @@ export class SVGIsolateBase extends HTMLElement {
      * @param {ComponentStyleSheets} [styleSheets={}] Append styles
      * @returns {void}
      */
-    static define(tagName, styleSheets = {}){
+    static define(tagName, styleSheets = {}) {
 
         tagName ??= this.DEFAULT_TAG_NAME;
 
-        if(!window.customElements.get(tagName)){
+        if (!window.customElements.get(tagName)) {
 
             //Initialize cache
-            if(this.CACHE_ENABLED){
+            if (this.CACHE_ENABLED) {
                 this.CACHE = new SVGIsolateCache(this, this.CACHE_MAX_ENTRIES);
             }
 
@@ -68,9 +68,9 @@ export class SVGIsolateBase extends HTMLElement {
         }
     };
 
-    
+
     //MARK: Fetching
-    static async fetchSVG(src, opt = {}){
+    static async fetchSVG(src, opt = {}) {
 
         const { sanitize = false } = opt;
 
@@ -78,23 +78,23 @@ export class SVGIsolateBase extends HTMLElement {
 
             const response = await fetch(src);
 
-            if(response.ok){
+            if (response.ok) {
 
                 let raw = await response.text();
 
-                if(sanitize && typeof this.sanitize === 'function') {
+                if (sanitize && typeof this.sanitize === 'function') {
 
                     raw = this.sanitize(raw);
                 }
 
                 return raw;
             }
-            else  {
+            else {
                 console.warn(`SVG fetch failed for "${src}": ${response.status} ${response.statusText}`);
                 return null;
             }
         }
-        catch(error) {
+        catch (error) {
 
             console.warn(`SVG fetch failed for "${src}":`, error);
             return null;
@@ -102,50 +102,68 @@ export class SVGIsolateBase extends HTMLElement {
     }
 
     //MARK: resolveSource
-    static resolveSource(src, base){
+    static resolveSource(src, base) {
 
-        if(!src) return null;
+        if (src == null) return null;
 
         const Src = new URL(src, document.baseURI);
-        
+
         // No prefix base, default base (/), or src is already an absolute URL
-        if(!base  || base === '/' || URL.canParse(src)) return Src;
-        
+        if (!base || base === '/' || URL.canParse(src)) return {
+            resolved: Src,
+            parts: {
+                origin: Src.origin,
+                basePath: '',
+                srcPath: Src.pathname,
+                search: Src.search,
+                hash: Src.hash
+            }
+        };
+
         const Base = new URL(base, document.baseURI);
 
         const basePath = Base.pathname.replace(/\/+$/, '');
         const srcPath = Src.pathname.replace(/^\/+/, '');
 
-        return new URL(`${basePath}/${srcPath}${Src.search}${Src.hash}`, Base.origin);
+        return {
+            resolved: new URL(`${basePath}/${srcPath}${Src.search}${Src.hash}`, Base.origin),
+            parts: {
+                origin: Base.origin,
+                basePath: basePath,
+                srcPath: '/' + srcPath,
+                search: Src.search,
+                hash: Src.hash
+            }
+        };
     }
 
     //MARK: loading
-    get loading(){
+    get loading() {
 
-        const {EAGER, LAZY, DEFER, IDLE} = this.constructor.LOADING;
+        const { EAGER, LAZY, DEFER, IDLE } = this.constructor.LOADING;
 
         const value = (this.getAttribute('loading') ?? '')
             .trim().toLowerCase();
 
-        if(value === EAGER || value === LAZY || value === DEFER || value === IDLE){
+        if (value === EAGER || value === LAZY || value === DEFER || value === IDLE) {
             return value;
         }
 
         return this.constructor.defaults.loading;
     }
-    set loading(value){
+    set loading(value) {
 
-        const {EAGER, LAZY, DEFER, IDLE} = this.constructor.LOADING;
+        const { EAGER, LAZY, DEFER, IDLE } = this.constructor.LOADING;
 
-        if(value == null){
+        if (value == null) {
             this.removeAttribute('loading');
             return;
         }
 
         value = String(value).trim().toLowerCase();
 
-        if(value === EAGER || value === LAZY || value === DEFER || value === IDLE){
-            
+        if (value === EAGER || value === LAZY || value === DEFER || value === IDLE) {
+
             this.setAttribute('loading', value);
         }
         else {
@@ -155,123 +173,123 @@ export class SVGIsolateBase extends HTMLElement {
     }
 
     //MARK: set string attribute with validation
-    #setStringAttribute(name, value, validate = () => true){
+    #setStringAttribute(name, value, validate = () => true) {
 
-        if(value == null){
+        if (value == null) {
             this.removeAttribute(name);
             return;
         }
         value = String(value).trim();
 
         try {
-            if(validate(value)) {
+            if (validate(value)) {
                 this.setAttribute(name, value);
             }
         }
-        catch(error) {
+        catch (error) {
             console.warn(`Invalid value for attribute "${name}": "${value}".`, error);
         }
     }
 
     //MARK: src
-    get src(){
+    get src() {
         return this.getAttribute('src');
     }
-    set src(value){
+    set src(value) {
         this.#setStringAttribute('src', value);
     }
 
     //MARK: src
-    get srcset(){
+    get srcset() {
         return this.getAttribute('srcset');
     }
-    set srcset(value){
+    set srcset(value) {
         this.#setStringAttribute('srcset', value);
     }
 
     //MARK: sources
-    get sources(){
+    get sources() {
 
         const result = {
             src: {
                 raw: this.src,
-                resolved: this.constructor.resolveSource(this.src, this.base)
+                resolved: this.constructor.resolveSource(this.src, this.base).resolved
             },
             srcset: []
         };
 
-        if(this.srcset){
+        if (this.srcset) {
 
             result.srcset = this.srcset.split(',')
-            .map(candidate => {
+                .map(candidate => {
 
-                candidate = candidate.trim();
+                    candidate = candidate.trim();
 
-                try {
-                    const lastSpace = candidate.lastIndexOf(' ');
-                    const descriptor = lastSpace !== -1 ? candidate.slice(lastSpace + 1) : null;
-    
-                    let url, width = 0;
-    
-                    if(descriptor?.endsWith('w')) {
+                    try {
+                        const lastSpace = candidate.lastIndexOf(' ');
+                        const descriptor = lastSpace !== -1 ? candidate.slice(lastSpace + 1) : null;
 
-                        url = candidate.slice(0, lastSpace).trim();
-                        width = Number(descriptor.slice(0, -1));
-                    } 
-                    else {
-                        // no descriptor — entire string is the URL
-                        url = candidate.trim();
-                        width;
+                        let url, width = 0;
+
+                        if (descriptor?.endsWith('w')) {
+
+                            url = candidate.slice(0, lastSpace).trim();
+                            width = Number(descriptor.slice(0, -1));
+                        }
+                        else {
+                            // no descriptor — entire string is the URL
+                            url = candidate.trim();
+                            width;
+                        }
+
+                        return {
+                            raw: url,
+                            resolved: this.constructor.resolveSource(url, this.base).resolved,
+                            width
+                        };
                     }
-    
-                    return { 
-                        raw: url,
-                        resolved: this.constructor.resolveSource(url, this.base), 
-                        width 
-                    };
-                }
-                catch(error) {
-                    return null;
-                }
-            })
-            .filter(c => c !== null);
+                    catch (error) {
+                        return null;
+                    }
+                })
+                .filter(c => c !== null);
         }
 
         return result;
     }
 
     //MARK: sanitize
-    get sanitize(){
+    get sanitize() {
         return this.hasAttribute('sanitize');
     }
-    set sanitize(value){
+    set sanitize(value) {
         this.toggleAttribute('sanitize', value != null && value !== false);
     }
 
     //MARK: useCache
-    get useCache(){
+    get useCache() {
         return this.constructor.CACHE_ENABLED && !this.hasAttribute('no-cache');
     }
-    set useCache(value){
+    set useCache(value) {
         this.toggleAttribute('no-cache', value != null && value !== true && this.constructor.CACHE_ENABLED);
     }
 
     //MARK: responsive
-    get responsive(){
+    get responsive() {
         return this.hasAttribute('responsive');
     }
-    set responsive(value){
+    set responsive(value) {
         this.toggleAttribute('responsive', value != null && value !== false);
     }
 
     //MARK: lazyMargin
-    get lazyMargin(){
+    get lazyMargin() {
         return this.getAttribute('lazy-margin') ?? this.constructor.defaults.lazyMargin;
     }
-    set lazyMargin(value){
+    set lazyMargin(value) {
         this.#setStringAttribute('lazy-margin', value, (v) => {
 
-            if(!CSS.supports('margin', value)) {
+            if (!CSS.supports('margin', value)) {
                 console.warn(`Invalid lazy-margin value: "${value}". It must be a valid CSS length.`);
                 return false;
             }
@@ -281,58 +299,58 @@ export class SVGIsolateBase extends HTMLElement {
     }
 
     //MARK: lazyThreshold
-    get lazyThreshold(){
+    get lazyThreshold() {
         const defaultValue = this.constructor.defaults.lazyThreshold;
         const value = Number(this.getAttribute('lazy-threshold') ?? defaultValue);
 
         return Number.isNaN(value) ? defaultValue : value;
     }
-    set lazyThreshold(value){
+    set lazyThreshold(value) {
 
-        if(value == null){
+        if (value == null) {
             this.removeAttribute('lazy-threshold');
             return;
         }
         value = Number(value);
 
-        if(Number.isNaN(value)){
+        if (Number.isNaN(value)) {
             console.warn(`Invalid lazy-threshold value: "${value}". It must be a number.`);
             return;
         }
         this.setAttribute('lazy-threshold', value);
     }
 
-    set base(value){
-        if(value == null){
+    set base(value) {
+        if (value == null) {
             this.removeAttribute('base');
             return;
         }
         this.setAttribute('base', String(value));
     }
-    get base(){
+    get base() {
         return this.getAttribute('base') ?? this.constructor.defaults.base;
     }
 
     //MARK: exposeSVG
     get exposeSVG() {
-        if(!this.hasAttribute('expose-svg')) return null;
+        if (!this.hasAttribute('expose-svg')) return null;
         return this.getAttribute('expose-svg') || 'svg';
     }
     set exposeSVG(value) {
-        if(value == null || value === false) {
+        if (value == null || value === false) {
             this.removeAttribute('expose-svg');
             return;
         }
         this.setAttribute('expose-svg', value === true ? '' : String(value));
     }
 
-    get width(){
+    get width() {
         return this.getAttribute('width');
     }
-    set width(value){
+    set width(value) {
         this.#setStringAttribute('width', value, (v) => {
 
-            if(!CSS.supports('width', value)) {
+            if (!CSS.supports('width', value)) {
                 console.warn(`Invalid width value: "${value}". It must be a valid CSS length.`);
                 return false;
             }
@@ -340,13 +358,13 @@ export class SVGIsolateBase extends HTMLElement {
         });
     }
 
-    get height(){
+    get height() {
         return this.getAttribute('height');
     }
-    set height(value){
+    set height(value) {
         this.#setStringAttribute('height', value, (v) => {
 
-            if(!CSS.supports('height', value)) {
+            if (!CSS.supports('height', value)) {
                 console.warn(`Invalid height value: "${value}". It must be a valid CSS length.`);
                 return false;
             }
@@ -355,17 +373,17 @@ export class SVGIsolateBase extends HTMLElement {
     }
 
     //MARK: SVG Attributes
-    get preserveAspectRatio(){
+    get preserveAspectRatio() {
         return this.getAttribute('preserveAspectRatio');
     }
-    set preserveAspectRatio(value){
+    set preserveAspectRatio(value) {
         this.#setStringAttribute('preserveAspectRatio', value);
     }
 
-    get viewBox(){
+    get viewBox() {
         return this.getAttribute('viewBox');
     }
-    set viewBox(value){
+    set viewBox(value) {
         this.#setStringAttribute('viewBox', value);
     }
 }

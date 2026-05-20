@@ -14,6 +14,13 @@ body {
 	justify-content: center;
 	gap: 20px;
 
+	h1 {
+		text-align: center;
+		font-family: monospace;
+		font-size: clamp(1.5em, 5vw, 2em);
+		letter-spacing: 2px;
+	}
+
 	.row {
 		display: flex;
 		justify-content: center;
@@ -43,12 +50,7 @@ svg-isolate {
 bootstrap-icon-svg {
 	outline: 1px dashed lightblue;
 }
-h2 {
-	text-align: center;
-	font-family: monospace;
-	font-size: 20pt;
-	letter-spacing: 2px;
-}
+
 
 #fetch-log {
 	position: relative;

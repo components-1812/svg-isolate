@@ -21,6 +21,7 @@
 - [Instance styles](#instance-styles)
 - [Default styles](#default-styles-bundle)
 - [`width` and `height`](#width-and-height)
+- [Base URL](#base-url)
 - [Cache](#cache)
 - [Loading Strategies](#loading-strategies)
 - [srcset & Responsive](#srcset--responsive)
@@ -109,9 +110,8 @@ import "@components-1812/svg-isolate";
 <svg-isolate srcset="icon-300.svg 300w, icon-600.svg 600w" />
 ```
 
----
+<br>
 
-<!--MARK: Custom Definition-->
 <!--MARK: Custom Definition-->
 ## Custom definition
 
@@ -138,7 +138,7 @@ Best for inlining styles directly without an external file.
 import SVGIsolate from "@components-1812/svg-isolate/SVGIsolate.js";
 
 SVGIsolate.define("custom-svg-isolate", {
-    raw: [`:host { display: inline-block; }`],
+	raw: [`:host { display: inline-block; }`],
 });
 ```
 
@@ -156,15 +156,16 @@ All three options can be combined in a single `define()` call:
 
 ```js
 SVGIsolate.define("custom-svg-isolate", {
-    adopted: [sheet],
-    raw: [":host { display: block; }"],
-    links: ["/path/to/styles.css"],
+	adopted: [sheet],
+	raw: [":host { display: block; }"],
+	links: ["/path/to/styles.css"],
 });
 ```
 
 Duplicate entries are ignored automatically — adding the same URL or `CSSStyleSheet` object twice has no effect.
 
 <!--MARK: Instance styles-->
+
 ## Instance styles
 
 Every `<svg-isolate>` element exposes a `componentStyles` property — a `ComponentStyles` instance that controls the styles injected into its shadow DOM. You can add or replace styles on a specific element at any time without affecting other instances.
@@ -174,7 +175,7 @@ Every `<svg-isolate>` element exposes a `componentStyles` property — a `Compon
 `componentStyles.add()` accepts the same `{ links, adopted, raw }` shape as `define()`. Chain `.apply()` to re-render the shadow DOM styles immediately.
 
 ```js
-const el = document.querySelector('svg-isolate');
+const el = document.querySelector("svg-isolate");
 
 el.componentStyles
     .add({ raw: [`:host { outline: 2px solid red; }`] })
@@ -191,13 +192,13 @@ CSS injected this way lives inside the shadow root, so it can reach the SVG elem
 document.querySelector('svg-isolate[sanitize]')
     .componentStyles
     .add({
-        raw: [`
+        raw: `
             circle { fill: #5f000d; }
             rect   { fill: #070070; }
             text   { fill: #c5b800; font-family: serif; }
-        `]
-    })
-    .apply();
+        `,
+	})
+	.apply();
 ```
 
 ### Working with the collections directly
@@ -208,15 +209,15 @@ Each style type is a `StyleCollection` instance and can be manipulated directly 
 const { raw, links, adopted } = el.componentStyles;
 
 // check what's already registered
-console.log(raw.size);    // number of raw CSS strings
-console.log(links.size);  // number of external stylesheets
+console.log(raw.size); // number of raw CSS strings
+console.log(links.size); // number of external stylesheets
 
 // check if a specific entry exists
-links.has('https://example.com/theme.css');
+links.has("https://example.com/theme.css");
 
 // iterate over current entries
 for (const url of links) {
-    console.log(url);
+	console.log(url);
 }
 
 // remove everything from one collection and replace it
@@ -229,9 +230,7 @@ el.componentStyles.apply();
 ### Adding an external stylesheet to one instance
 
 ```js
-el.componentStyles
-    .add({ links: ['/themes/dark.css'] })
-    .apply();
+el.componentStyles.add({ links: ["/themes/dark.css"] }).apply();
 ```
 
 The `ready-links` event fires once the stylesheet has loaded.
@@ -242,9 +241,9 @@ Call `.clear()` before `.add()` to discard everything and start fresh:
 
 ```js
 el.componentStyles
-    .clear()
-    .add({ raw: [`:host { background: #000; }`] })
-    .apply();
+	.clear()
+	.add({ raw: [`:host { background: #000; }`] })
+	.apply();
 ```
 
 > **Note:** `componentStyles` is per-instance. Changes made to one element do not affect other `<svg-isolate>` elements on the page, even if they share the same `src`.
@@ -258,24 +257,25 @@ When loaded via the auto-import bundle, <svg-isolate> ships with these default h
 
 ```css
 :host {
-    position: relative;
-    display: inline-block;
+	position: relative;
+	display: inline-block;
 
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
 
-    contain: size;
+	contain: size;
 
-    overflow: hidden;
+	overflow: hidden;
 }
 :host svg {
-    display: block;
-    width: 100%;
-    height: 100%;
+	display: block;
+	width: 100%;
+	height: 100%;
 }
 ```
+
 From: [/src/SVGIsolate.css](/src/SVGIsolate.css)
 The most important of these is `contain: size` — it prevents the component from triggering
 layout recalculations in its parent (particularly relevant inside `flex` and `grid` containers,
@@ -292,9 +292,9 @@ To override the defaults on a specific instance without touching others, use `co
 
 ```js
 el.componentStyles
-    .clear()
-    .add({ raw: [`:host { display: block; width: 300px; height: 300px; }`] })
-    .apply();
+	.clear()
+	.add({ raw: [`:host { display: block; width: 300px; height: 300px; }`] })
+	.apply();
 ```
 
 See [Instance styles](#instance-styles) for the full API.
@@ -302,6 +302,7 @@ See [Instance styles](#instance-styles) for the full API.
 <br>
 
 <!--MARK: width and height-->
+
 ## `width` and `height`
 
 Sets `style.width` and `style.height` on the `<svg-isolate>` host element directly.
@@ -312,11 +313,46 @@ Sets `style.width` and `style.height` on the `<svg-isolate>` host element direct
 ```
 
 ```js
-el.width = '50%';
-el.height = '120px';
+el.width = "50%";
+el.height = "120px";
 ```
 
 Accepts any valid CSS length value. Equivalent to setting `style.width` / `style.height` inline — useful when you want to control dimensions declaratively via HTML rather than in your stylesheet.
+
+<br>
+
+<!--MARK: Base URL -->
+
+## Base URL
+
+You can provide a `base` attribute to resolve the `src` URL against a specific base path rather than the document's base URI.
+
+The `base` is always a fixed URL to which the `src` is concatenated. If `base` is relative, it is resolved against `document.baseURI`. Then, if `src` is also relative, its resolved path is appended to the `base`.
+
+The resulting URL follows this structure:
+`<base origin>/<base path>/<src path>?<src_query>#<src_hash>`
+
+```html
+<svg-isolate src="/icons/circle.svg" base="/assets"></svg-isolate>
+<svg-isolate src="circle.svg" base="https://cdn.example.com"></svg-isolate>
+```
+
+```js
+el.base = "/assets";
+```
+
+### Examples
+
+The resolution logic is handled internally by the static method `SVGIsolate.resolveSource(src, base)`. Here are a few representative examples of how different inputs are resolved (assuming a document URI of `http://127.0.0.1:3000/docs/examples/base-test/`):
+
+| `src`                                | `base`                    | Resolved URL                                                                 | Description                                         |
+| :----------------------------------- | :------------------------ | :--------------------------------------------------------------------------- | :-------------------------------------------------- |
+| `https://raw.example.com/circle.svg` | `/docs`                   | `https://raw.example.com/circle.svg`                                         | Absolute URL `src`, `base` is ignored               |
+| `/assets/circle.svg`                 | `/docs`                   | `http://127.0.0.1:3000/docs/assets/circle.svg`                               | Root-relative `src` treated relative to `base` path |
+| `../../../assets/circle.svg`         | `/docs`                   | `http://127.0.0.1:3000/docs/assets/circle.svg`                               | Root-relative nested `src` with path `base`         |
+| `/0-circle.svg`                      | `https://raw.example.com` | `https://raw.example.com/0-circle.svg`                                       | Root-relative `src` with absolute domain `base`     |
+| `circle.svg`                         | `/`                       | `http://127.0.0.1:3000/docs/examples/base-test/circle.svg`                   | Relative `src` with default `base`                  |
+| `assets/circle?w=150#svg`            | `/docs`                   | `http://127.0.0.1:3000/docs/docs/examples/base-test/assets/circle?w=150#svg` | With query params and hash                          |
 
 <br>
 
@@ -528,6 +564,7 @@ SVGIsolate.defaults.responsive = true;
 <br>
 
 <!--MARK: Sanitize -->
+
 ## Sanitize
 
 `<svg-isolate>` renders SVG files inside a shadow DOM using `DOMParser` and `appendChild`. This means:
@@ -547,11 +584,11 @@ Set a static sanitizer function before any component renders. It receives the ra
 import DOMPurify from "https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.es.mjs";
 
 SVGIsolate.sanitize = (raw) => {
-    return DOMPurify.sanitize(raw, {
-        USE_PROFILES: { svg: true },
-        FORBID_TAGS: ['style', 'script'],
-        FORBID_ATTR: ['style'],
-    });
+	return DOMPurify.sanitize(raw, {
+		USE_PROFILES: { svg: true },
+		FORBID_TAGS: ["style", "script"],
+		FORBID_ATTR: ["style"],
+	});
 };
 ```
 
@@ -586,8 +623,8 @@ SVGIsolate.defaults.sanitize = true;
 
 <br>
 
-
 <!-- MARK: Styling the inner SVG -->
+
 ## Styling the inner SVG
 
 The SVG rendered inside `<svg-isolate>` lives in a shadow DOM, so external CSS cannot reach it directly. The component provides a few ways to interact with it.
@@ -683,7 +720,7 @@ SVGIsolate.define("svg-isolate", {
             fill: var(--svg-fill, currentColor);
             stroke: var(--svg-stroke, none);
         }
-    `
+    `,
 });
 ```
 
@@ -700,6 +737,7 @@ This approach works for any CSS property regardless of shadow DOM encapsulation.
 | Attribute             | Description                                                                                         |
 | --------------------- | --------------------------------------------------------------------------------------------------- |
 | `src`                 | Path to the SVG file. Triggers a reload when changed. Ignored if `srcset` is present                |
+| `base`                | Base path or URL to prepend to the `src`.                                                           |
 | `srcset`              | Comma-separated srcset candidates. Takes priority over `src`. Triggers a reload when changed        |
 | `preserveAspectRatio` | Forwarded directly to the inner `<svg>` without triggering a reload                                 |
 | `viewBox`             | Forwarded directly to the inner `<svg>` without triggering a reload                                 |

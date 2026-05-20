@@ -20,18 +20,22 @@ function LOG(url, src, base){
     document.querySelector('#fetch-log').append(div);
 }
 
+[
+    ...document.querySelectorAll('svg-isolate'),
+    ...document.querySelectorAll('bootstrap-icon-svg'),
+]
+.forEach(svg => {
 
-class SVGIsolateDebug extends SVGIsolate {
+    svg.addEventListener('fetching', (e) => {
+        const {resolved, src} = e.detail;
+        const base = e.target.base;
+        
+        LOG(resolved.href, src, base);
+    })
+});
 
-    loadSVG(src){
-        super.loadSVG(src);
 
-        const {raw, resolved} = this.currentSource;
-        LOG(resolved, raw, this.base);
-    }
-}
-
-SVGIsolateDebug.define(null, {
+SVGIsolate.define(null, {
     links: [
         //'/dist/SVGIsolate.css',
         'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/SVGIsolate.min.css'
@@ -46,13 +50,6 @@ class BootstrapIconsSVG extends SVGIsolate {
         ...super.defaults,
         base: 'https://raw.githubusercontent.com/twbs/icons/refs/heads/main/icons'
     }
-
-    loadSVG(src){
-        super.loadSVG(src);
-
-        const {raw, resolved} = this.currentSource;
-        LOG(resolved, raw, this.base);
-    }
 }
 
 BootstrapIconsSVG.define('bootstrap-icon-svg', {
@@ -61,3 +58,5 @@ BootstrapIconsSVG.define('bootstrap-icon-svg', {
         'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/SVGIsolate.min.css'
     ]
 });
+
+
