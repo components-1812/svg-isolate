@@ -12,9 +12,9 @@
     <h1>Base URL Remapping</h1>
 
     <div class="row">
-        <svg-isolate src="/assets/circle.svg" base="/svg-isolate"></svg-isolate>
+        <svg-isolate src="/assets/circle.svg" base="/"></svg-isolate>
 
-        <svg-isolate src="/hexagon.svg" base="/svg-isolate/assets"></svg-isolate>
+        <svg-isolate src="/hexagon.svg" base="/assets"></svg-isolate>
 
         <svg-isolate src="../../assets/triangle.svg" base="/"></svg-isolate>
 
@@ -49,6 +49,9 @@
 
     <div id="fetch-log">
         <h3>Fetching LOG:</h3>
+        <div class="content">
+            <div class="logs"></div>
+        </div>
     </div>
 
     <script type="module" src="script.js"></script>

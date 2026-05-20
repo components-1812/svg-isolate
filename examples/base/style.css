@@ -27,8 +27,8 @@ body {
 		gap: 20px;
 
 		& > * {
-			width: 150px;
-			height: 150px;
+			width: 200px;
+			height: 200px;
 		}
 	}
 
@@ -59,15 +59,16 @@ bootstrap-icon-svg {
 	border: 1px solid #30363d;
 	border-radius: 12px;
 	overflow: hidden;
-	font-family: Consolas, Monaco, monospace;
+
+	font-family: Consolas, monospace;
 	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
 
-	max-height: 400px;
-	overflow: auto;
+	display: flex;
+	flex-direction: column;
+
+	height: 500px;
 
 	h3 {
-		position: sticky;
-		top: 0;
 		background: #161b22;
 		color: #8b949e;
 		font-size: 13px;
@@ -77,30 +78,43 @@ bootstrap-icon-svg {
 		letter-spacing: 0.5px;
 		text-transform: uppercase;
 	}
-	.log {
-		padding: 10px 16px;
-		color: #747d88;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-		font-size: 14px;
 
-		p {
-			line-height: 1.8;
-			a {
-				color: #58a6ff;
-				text-decoration: none;
-			}	
-			span {
-				color: #7ee787;
+	.content {
+		overflow: auto;
+		flex-grow: 1;
+
+		.logs {
+			min-width: fit-content;
+
+			.log {
+				padding: 10px 16px;
+				color: #747d88;
+				border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+				font-size: 14px;
+		
+				p {
+					line-height: 1.8;
+					white-space: nowrap;
+		
+					a {
+						display: inline-block;
+						color: #58a6ff;
+						text-decoration: none;
+					}	
+					span {
+						color: #7ee787;
+					}
+				}
+				p:first-child::before {
+					content: ">";
+					color: #58a6ff;
+					margin-right: 10px;
+					font-weight: bold;	
+				}
+			}
+			.log:last-child {
+				border-bottom: none;
 			}
 		}
-		p:first-child::before {
-			content: ">";
-			color: #58a6ff;
-			margin-right: 10px;
-			font-weight: bold;	
-		}
-	}
-	.log:last-child {
-		border-bottom: none;
 	}
 }

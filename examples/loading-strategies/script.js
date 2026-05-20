@@ -1,20 +1,11 @@
-//import '/dist/index.bundle.js';
-//import SVGIsolate from "/src/SVGIsolate.js";
+import SVGIsolate from "/src/SVGIsolate.js";
 
-//mport 'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/index.bundle.min.js';
-//import SVGIsolate from 'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/SVGIsolate.min.js';
-import SVGIsolate from 'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate/src/SVGIsolate.js';
-
-SVGIsolate.defaults.base = '/svg-isolate';//<- Github pages
-//SVGIsolate.defaults.base = '/docs';//<- Local
 
 SVGIsolate.define(null, {
     links: [
-        //'/dist/SVGIsolate.css',
-        'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/SVGIsolate.min.css'
+        '/src/SVGIsolate.css',
     ]
 });
-
 
 const initTime = performance.now();
 

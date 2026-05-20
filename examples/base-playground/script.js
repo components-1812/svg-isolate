@@ -1,9 +1,8 @@
-//import SVGIsolate from "/src/SVGIsolate.js";
-import SVGIsolate from 'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate/src/SVGIsolate.js';
+import SVGIsolate from "/src/SVGIsolate.js";
 
 const examples = await (await fetch('examples.json')).json();
 
-for (const example of examples) {
+for(const example of examples) {
 
     const { src, base, desc } = example;
 
@@ -61,11 +60,8 @@ function showResult(src, base = '/') {
     document.querySelector('.playground .result').replaceChildren(a);
 }
 
-
 const srcInput = document.querySelector('input[name="src"]');
 const baseInput = document.querySelector('input[name="base"]');
-
-console.log(srcInput)
 
 function onChange() {
     const src = srcInput.value;
