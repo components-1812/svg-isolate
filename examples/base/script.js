@@ -1,10 +1,5 @@
-//import SVGIsolate from '/src/SVGIsolate.js';
-//import SVGIsolate from '/dist/SVGIsolate.js';
 
-//mport 'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/index.bundle.min.js';
-//import SVGIsolate from 'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.4/dist/SVGIsolate.min.js';
 import SVGIsolate from 'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate/src/SVGIsolate.js';
-
 
 function LOG(url, src, base){
 
@@ -37,8 +32,7 @@ function LOG(url, src, base){
 
 SVGIsolate.define(null, {
     links: [
-        //'/dist/SVGIsolate.css',
-        'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/SVGIsolate.min.css'
+        'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate/src/SVGIsolate.css',
     ]
 });
 
@@ -54,8 +48,7 @@ class BootstrapIconsSVG extends SVGIsolate {
 
 BootstrapIconsSVG.define('bootstrap-icon-svg', {
     links: [
-        //'/dist/SVGIsolate.css',
-        'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/SVGIsolate.min.css'
+        'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate/src/SVGIsolate.css',
     ]
 });
 

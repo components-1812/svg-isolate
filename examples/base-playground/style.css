@@ -2,11 +2,9 @@
     margin: 0;
     padding: 0;
 }
-
 :root {
     color-scheme: dark;
 }
-
 body {
     margin: auto;
     padding: 50px;

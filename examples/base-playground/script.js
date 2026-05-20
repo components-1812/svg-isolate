@@ -1,4 +1,4 @@
-//import SVGIsolate from "/src/SVGIsolate.js";
+
 import SVGIsolate from 'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate/src/SVGIsolate.js';
 
 const examples = await (await fetch('examples.json')).json();
@@ -40,6 +40,8 @@ for (const example of examples) {
 }
 
 console.log(examples);
+
+
 
 //Playground
 function showResult(src, base = '/') {

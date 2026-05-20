@@ -1,38 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SVGIsolate Loading Strategies</title>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>SVGIsolate Loading Strategies</title>
 
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <h1>SVGIsolate Loading Strategies</h1>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <h1>SVGIsolate Loading Strategies</h1>
 
-    <div class="card">
-        <h4>Eager (default)</h4>
-        <svg-isolate src="/assets/circle.svg"></svg-isolate>
-    </div>
-
-    <div class="card">
-        <h4>Defer (DOMContentLoaded)</h4>
-        <svg-isolate src="/assets/triangle.svg" loading="defer"></svg-isolate>
-    </div>
-
-    <div class="card">
-        <h4>Idle (requestIdleCallback)</h4>
-        <svg-isolate src="/assets/hexagon.svg" loading="idle"></svg-isolate>
-    </div>
-
-    <div class="card">
-        <div class="scrollable">
-            <h4>Lazy (Intersection Observer)</h4>
-            <p></p>
-            <svg-isolate src="/assets/heart.svg" loading="lazy"></svg-isolate>
+        <div class="card">
+            <h4>Eager (default)</h4>
+            <svg-isolate src="/assets/circle.svg"></svg-isolate>
         </div>
-    </div>
 
-    <script type="module" src="script.js"></script>
-</body>
+        <div class="card">
+            <h4>Defer (DOMContentLoaded)</h4>
+            <svg-isolate src="/assets/triangle.svg" loading="defer"></svg-isolate>
+        </div>
+
+        <div class="card">
+            <h4>Idle (requestIdleCallback)</h4>
+            <svg-isolate src="/assets/hexagon.svg" loading="idle"></svg-isolate>
+        </div>
+
+        <div class="card">
+            <div class="scrollable">
+                <h4>Lazy (Intersection Observer)</h4>
+                <p></p>
+                <svg-isolate src="/assets/heart.svg" loading="lazy"></svg-isolate>
+            </div>
+        </div>
+
+        <script type="module" src="script.js"></script>
+    </body>
 </html>

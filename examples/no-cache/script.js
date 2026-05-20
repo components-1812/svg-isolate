@@ -1,6 +1,7 @@
-import SVGIsolate from '/src/SVGIsolate.js';
-//import SVGIsolate from '/dist/SVGIsolate.js';
+import SVGIsolate from 'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate/src/SVGIsolate.js';
 
+
+SVGIsolate.defaults.base = '/svg-isolate';//gh-pages
 
 class SVGIsolateDebug extends SVGIsolate {
 
@@ -29,7 +30,7 @@ class SVGIsolateDebug extends SVGIsolate {
 
 SVGIsolateDebug.define(null, {
     links: [
-        'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/SVGIsolate.min.css'
+        'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate/src/SVGIsolate.css'
     ]
 });
 
