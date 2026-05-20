@@ -791,12 +791,20 @@ This approach works for any CSS property regardless of shadow DOM encapsulation.
 
 ### State (read-only)
 
-| Attribute     | Description                                                 |
-| ------------- | ----------------------------------------------------------- |
-| `ready`       | Present when the SVG has been successfully rendered         |
-| `ready-links` | Present when all external stylesheets have finished loading |
+| Attribute     | Description                                                                   |
+| ------------- | ----------------------------------------------------------------------------- |
+| `fetching`    | Present while the SVG is being fetched. Removed once the fetch completes      |
+| `ready`       | Present when the SVG has been successfully rendered                            |
+| `ready-links` | Present when all external stylesheets have finished loading                   |
 
 Use these attributes to drive CSS transitions or show loading states while the component initializes.
+
+```css
+/* show a spinner while fetching */
+svg-isolate[fetching] {
+	background: url('spinner.svg') center / 24px no-repeat;
+}
+```
 
 ```css
 svg-isolate {
@@ -823,12 +831,48 @@ svg-isolate[ready-links] {
 
 | Event         | Description                                                                                                          |
 | ------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `fetching`    | Fired every time a fetch is about to start — on load, on `src`/`srcset` changes, and on srcset candidate swaps       |
 | `ready`       | Fired every time an SVG is successfully rendered — on load, on `src`/`srcset` changes, and on srcset candidate swaps |
 | `ready-links` | Fired once when all external stylesheets injected via `links` have finished loading                                  |
 
 <br>
 
+### Event detail
+
+#### `fetching`
+
+```js
+el.addEventListener("fetching", (e) => {
+	const { src, resolved } = e.detail;
+	// src      — the raw value from the src/srcset attribute
+	// resolved — URL object with the fully resolved href
+});
+```
+
+#### `ready`
+
+No `detail`. The SVG is already in the shadow root when the event fires.
+
+```js
+el.addEventListener("ready", (e) => {
+	const svg = e.target.shadowRoot.querySelector("svg");
+});
+```
+
+#### `ready-links`
+
+```js
+el.addEventListener("ready-links", (e) => {
+	const { results } = e.detail;
+	// results — array of settled outcomes, one per <link> injected via `links`
+	// each entry: { link: HTMLLinkElement, href: string, status: "loaded" | "error" }
+});
+```
+
+<br>
+
 > For full API documentation including properties, methods, return types and parameters, see [docs/api.md](./docs/api.md).
+
 
 <br>
 
