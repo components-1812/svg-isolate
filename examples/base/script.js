@@ -1,7 +1,6 @@
 import SVGIsolate from '/src/SVGIsolate.js';
 //import SVGIsolate from '/dist/SVGIsolate.js';
 
-
 function LOG(url, src, base){
 
     console.log(`[DEBUG] Loading:`, {fetching: url, src, base});
