@@ -322,7 +322,6 @@ Accepts any valid CSS length value. Equivalent to setting `style.width` / `style
 <br>
 
 <!--MARK: Base URL -->
-
 ## Base URL
 
 You can provide a `base` attribute to resolve the `src` URL against a specific base path rather than the document's base URI.
@@ -330,7 +329,16 @@ You can provide a `base` attribute to resolve the `src` URL against a specific b
 The `base` is always a fixed URL to which the `src` is concatenated. If `base` is relative, it is resolved against `document.baseURI`. Then, if `src` is also relative, its resolved path is appended to the `base`.
 
 The resulting URL follows this structure:
-`<base origin>/<base path>/<src path>?<src_query>#<src_hash>`
+
+```txt
+<base origin>/<base path>/<src path>?<src query>#<src hash>
+```
+
+- The default value of `base` is `"/"`.
+- If `src` is an absolute URL, `base` is ignored entirely and `src` is used as-is.
+- The resolution logic is handled internally by the static method `SVGIsolate.resolveSource(src, base)`
+
+### Usage
 
 ```html
 <svg-isolate src="/icons/circle.svg" base="/assets"></svg-isolate>
@@ -341,9 +349,35 @@ The resulting URL follows this structure:
 el.base = "/assets";
 ```
 
+### Setting a default base
+
+To apply a fixed `base` to all instances of a custom element, set it in `SVGIsolate.defaults.base` before calling `define()`:
+
+```js
+class BootstrapIcon extends SVGIsolate {
+	static defaults = {
+		...super.defaults,
+		base: "https://raw.githubusercontent.com/twbs/icons/refs/heads/main/icons",
+	};
+}
+
+BootstrapIcon.define("bootstrap-icon", {
+	links: [
+		"https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/SVGIsolate.min.css",
+	],
+});
+```
+
+Now every `<bootstrap-icon>` resolves `src` against that CDN path without needing `base` on each element:
+
+```html
+<bootstrap-icon src="circle.svg"></bootstrap-icon>
+<!-- → https://raw.githubusercontent.com/twbs/icons/refs/heads/main/icons/circle.svg -->
+```
+
 ### Examples
 
-The resolution logic is handled internally by the static method `SVGIsolate.resolveSource(src, base)`. Here are a few representative examples of how different inputs are resolved (assuming a document URI of `http://127.0.0.1:3000/docs/examples/base-test/`):
+Here are a few representative examples of how different inputs are resolved (assuming a document URI of `http://127.0.0.1:3000/docs/examples/base-test/`):
 
 | `src`                                | `base`                    | Resolved URL                                                                 | Description                                         |
 | :----------------------------------- | :------------------------ | :--------------------------------------------------------------------------- | :-------------------------------------------------- |
@@ -357,7 +391,6 @@ The resolution logic is handled internally by the static method `SVGIsolate.reso
 <br>
 
 <!--MARK: Cache -->
-
 ## Cache
 
 By default, `<svg-isolate>` caches every SVG source **in memory** after the first fetch, so subsequent requests for the same URL are served instantly without hitting the network.
