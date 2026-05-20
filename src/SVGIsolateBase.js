@@ -211,13 +211,16 @@ export class SVGIsolateBase extends HTMLElement {
     get sources() {
 
         const result = {
-            src: {
-                raw: this.src,
-                resolved: this.constructor.resolveSource(this.src, this.base).resolved
-            },
+            src: null,
             srcset: []
         };
 
+        if (this.src) {
+            result.src = {
+                raw: this.src,
+                resolved: this.constructor.resolveSource(this.src, this.base).resolved
+            };
+        }
         if (this.srcset) {
 
             result.srcset = this.srcset.split(',')
