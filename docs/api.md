@@ -52,6 +52,7 @@ flowchart TD
 | `DEFAULT_TAG_NAME`  | `string`                       | `'svg-isolate'` | Default tag name used when calling `define()`                                        |
 | `CACHE_ENABLED`     | `boolean`                      | `true`          | Enables or disables the cache system entirely. Must be set before `define()`         |
 | `CACHE_MAX_ENTRIES` | `number`                       | `100`           | Maximum number of entries the cache holds. Must be set before `define()`             |
+| `RESIZE_DEBOUNCE`   | `number`                       | `100`           | Debounce time in milliseconds for the resize observer when `responsive` is `true`    |
 | `CACHE`             | `SVGIsolateCache`              | —               | Cache instance. Created automatically by `define()` if `CACHE_ENABLED` is `true`     |
 | `sanitize`          | `Function \| null`             | `null`          | Static sanitizer function. Receives a raw SVG string and returns a sanitized string  |
 | `defaults`          | `object`                       | —               | Default values for all instance properties. See [Defaults](#defaults)                |
@@ -285,6 +286,8 @@ el.loadSVG("circle.svg", { base: "https://cdn.example.com/icons" });
 #### `renderSVG(svg)`
 
 Renders an SVG into the shadow DOM. Dispatches the `ready` event and sets the `ready` attribute on completion.
+
+> **Note**: When called directly, this method clears any active observers and removes all source-related attributes (`src`, `srcset`, `responsive`, `loading`, etc.) to put the component into a manual/light DOM mode.
 
 | Parameter | Type                   | Description                       |
 | --------- | ---------------------- | --------------------------------- |
@@ -523,5 +526,6 @@ Now every `<my-icon>` resolves `src` against the CDN without needing a `base` at
 ```html
 <my-icon src="circle.svg"></my-icon>
 <!-- → https://cdn.example.com/icons/circle.svg -->
+```
 
 Each subclass gets its own independent cache instance — two subclasses pointing to the same URL will not share cached results.
