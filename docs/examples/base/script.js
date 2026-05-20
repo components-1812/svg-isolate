@@ -2,7 +2,8 @@
 //import SVGIsolate from '/dist/SVGIsolate.js';
 
 //mport 'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/index.bundle.min.js';
-import SVGIsolate from 'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.4/dist/SVGIsolate.min.js';
+//import SVGIsolate from 'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.4/dist/SVGIsolate.min.js';
+import SVGIsolate from 'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate/src/SVGIsolate.js';
 
 
 function LOG(url, src, base){
@@ -33,9 +34,6 @@ function LOG(url, src, base){
         LOG(resolved.href, src, base);
     })
 });
-
-//SVGIsolate.defaults.base = '/svg-isolate';//<- Github pages
-SVGIsolate.defaults.base = '/docs';//<- Local
 
 SVGIsolate.define(null, {
     links: [

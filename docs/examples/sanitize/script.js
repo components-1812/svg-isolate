@@ -6,20 +6,21 @@ import SVGIsolate from "/src/SVGIsolate.js";
 import DOMPurify from "https://cdn.jsdelivr.net/npm/dompurify@3.4.3/dist/purify.es.mjs";
 
 
-class SVGIsolateDebug extends SVGIsolate {
+document.querySelectorAll('svg-isolate')
+.forEach(element => {
 
-    renderSVG(svg){
-        
+    element.addEventListener('ready', (e) => {
+
+        const svg = e.target.shadowRoot.querySelector('svg');
+
         const pre = document.createElement('pre');
-        pre.textContent = svg;
+        pre.textContent = svg.outerHTML;
 
-        this.closest('.row').querySelector('code').append(pre);
+        e.target.closest('.row').querySelector('code').append(pre);
+    });
+})
 
-        super.renderSVG(svg);
-    }
-}
-
-SVGIsolateDebug.sanitize = function(raw){
+SVGIsolate.sanitize = function(raw){
 
     return DOMPurify.sanitize(raw, {
         USE_PROFILES: { svg: true },
@@ -28,7 +29,7 @@ SVGIsolateDebug.sanitize = function(raw){
     });
 }
 
-SVGIsolateDebug.define(null,  {
+SVGIsolate.define(null,  {
     links: [
         //'/dist/SVGIsolate.css',
         'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/SVGIsolate.min.css'

@@ -1,8 +1,13 @@
-import SVGIsolate from '/src/SVGIsolate.js';
+//import SVGIsolate from '/src/SVGIsolate.js';
 //import SVGIsolate from '/dist/SVGIsolate.js';
 
 //mport 'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/index.bundle.min.js';
 //import SVGIsolate from 'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/SVGIsolate.min.js';
+import SVGIsolate from 'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate/src/SVGIsolate.js';
+
+SVGIsolate.defaults.base = '/svg-isolate';//<- Github pages
+//SVGIsolate.defaults.base = '/docs';//<- Local
+
 
 class SVGIsolateDebug extends SVGIsolate {
 
@@ -28,8 +33,6 @@ class SVGIsolateDebug extends SVGIsolate {
 }
 
 //SVGIsolateDebug.defaults.useCache = false;// Enable cache by default
-
-SVGIsolateDebug.defaults.base = '/docs';
 
 SVGIsolateDebug.define(null, {
     links: [

@@ -1,4 +1,5 @@
-import SVGIsolate from "/src/SVGIsolate.js";
+//import SVGIsolate from "/src/SVGIsolate.js";
+import SVGIsolate from 'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate/src/SVGIsolate.js';
 
 const examples = await (await fetch('examples.json')).json();
 
