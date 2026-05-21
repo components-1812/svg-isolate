@@ -54,3 +54,5 @@ BootstrapIconsSVG.define('bootstrap-icon-svg', {
 });
 
 
+window.SVGIsolate = SVGIsolate;
+window.BootstrapIconsSVG = BootstrapIconsSVG;

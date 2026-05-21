@@ -19,20 +19,7 @@ const svg = this.querySelector('svg');
 if (svg) this.shadowRoot.append(svg.cloneNode(true)); // <--- Usar cloneNode(true)
 ```
 
-### 2. 💥 Crash por Timeout fantasma en el ResizeObserver
-**El problema:**
-En `#watchSrcset()`, usas un `setTimeout` para hacer el *debounce* del `ResizeObserver`. Si el componente se elimina del DOM o cambias el `src` justo antes de que se cumplan esos 100ms, se llama a `this.clear()`, lo que vacía el mapa `this.observers`.
-Sin embargo, el `timeout` sigue corriendo. Cuando se ejecuta `onResize()`, intenta hacer `this.observers.get('resize').disconnect()`. Como el mapa está vacío, `get()` devuelve `undefined` y la app explota con un error: `TypeError: Cannot read properties of undefined (reading 'disconnect')`.
-**La solución:**
-Validar que el observer exista antes de desconectarlo:
-```javascript
-// En #watchSrcset() -> onResize()
-if (!this.responsive) {
-    const observer = this.observers.get('resize');
-    if (observer) observer.disconnect(); // <--- Validación de seguridad
-    this.observers.delete('resize');
-}
-```
+
 
 ### 3. 🏎️ Condición de Carrera (Race Condition) en `#loadSVG`
 **El problema:**

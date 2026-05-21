@@ -16,6 +16,8 @@ export class SVGIsolateBase extends HTMLElement {
     static CACHE_ENABLED = true;
     static CACHE_MAX_ENTRIES = 100;
 
+    static RESIZE_DEBOUNCE = 100;
+
     static defaults = {
         loading: this.LOADING.EAGER,
         lazyThreshold: 0,
@@ -78,6 +80,9 @@ export class SVGIsolateBase extends HTMLElement {
 
             const response = await fetch(src);
 
+            const contentLength = Number(response.headers.get('Content-Length'));
+            const size = Number.isNaN(contentLength) ? 0 : contentLength;
+
             if (response.ok) {
 
                 let raw = await response.text();
@@ -87,7 +92,7 @@ export class SVGIsolateBase extends HTMLElement {
                     raw = this.sanitize(raw);
                 }
 
-                return raw;
+                return { raw, size };
             }
             else {
                 console.warn(`SVG fetch failed for "${src}": ${response.status} ${response.statusText}`);
@@ -135,76 +140,6 @@ export class SVGIsolateBase extends HTMLElement {
                 hash: Src.hash
             }
         };
-    }
-
-    //MARK: loading
-    get loading() {
-
-        const { EAGER, LAZY, DEFER, IDLE } = this.constructor.LOADING;
-
-        const value = (this.getAttribute('loading') ?? '')
-            .trim().toLowerCase();
-
-        if (value === EAGER || value === LAZY || value === DEFER || value === IDLE) {
-            return value;
-        }
-
-        return this.constructor.defaults.loading;
-    }
-    set loading(value) {
-
-        const { EAGER, LAZY, DEFER, IDLE } = this.constructor.LOADING;
-
-        if (value == null) {
-            this.removeAttribute('loading');
-            return;
-        }
-
-        value = String(value).trim().toLowerCase();
-
-        if (value === EAGER || value === LAZY || value === DEFER || value === IDLE) {
-
-            this.setAttribute('loading', value);
-        }
-        else {
-
-            console.warn(`Invalid loading value: "${value}". Valid values are: "${EAGER}", "${LAZY}", "${DEFER}", "${IDLE}".`);
-        }
-    }
-
-    //MARK: set string attribute with validation
-    #setStringAttribute(name, value, validate = () => true) {
-
-        if (value == null) {
-            this.removeAttribute(name);
-            return;
-        }
-        value = String(value).trim();
-
-        try {
-            if (validate(value)) {
-                this.setAttribute(name, value);
-            }
-        }
-        catch (error) {
-            console.warn(`Invalid value for attribute "${name}": "${value}".`, error);
-        }
-    }
-
-    //MARK: src
-    get src() {
-        return this.getAttribute('src');
-    }
-    set src(value) {
-        this.#setStringAttribute('src', value);
-    }
-
-    //MARK: src
-    get srcset() {
-        return this.getAttribute('srcset');
-    }
-    set srcset(value) {
-        this.#setStringAttribute('srcset', value);
     }
 
     //MARK: sources
@@ -261,6 +196,102 @@ export class SVGIsolateBase extends HTMLElement {
         return result;
     }
 
+    //MARK: Attributes management
+    //MARK: set string attribute with validation
+    _setStringAttribute(name, value, opt = {}) {
+
+        if (value == null) {
+            this.removeAttribute(name);
+            return;
+        }
+
+        const {
+            validate = () => true,
+            message = `Invalid value for attribute "${name}": "${value}".`
+        } = opt;
+
+        value = String(value).trim();
+
+        try {
+            if (validate(value)) this.setAttribute(name, value);
+
+        }
+        catch (error) {
+            console.warn(message, error);
+        }
+    }
+    //MARK: set number attribute with validation
+    _setNumberAttribute(name, value, opt = {}) {
+
+        if (value == null) {
+            this.removeAttribute(name);
+            return;
+        }
+
+        const {
+            validate = () => true,
+            message = `Invalid value for attribute "${name}": "${value}". It must be a number.`
+        } = opt;
+
+        const number = Number(value);
+
+        if (Number.isNaN(number)) {
+            console.warn(message);
+            return;
+        }
+
+        try {
+            if (validate(number)) this.setAttribute(name, number);
+        }
+        catch (error) {
+            console.warn(message, error);
+        }
+    }
+
+    //MARK: loading
+    get loading() {
+
+        const { EAGER, LAZY, DEFER, IDLE } = this.constructor.LOADING;
+
+        const value = (this.getAttribute('loading') ?? '')
+            .trim().toLowerCase();
+
+        if (value === EAGER || value === LAZY || value === DEFER || value === IDLE) {
+            return value;
+        }
+
+        return this.constructor.defaults.loading;
+    }
+    set loading(value) {
+
+        const { EAGER, LAZY, DEFER, IDLE } = this.constructor.LOADING;
+
+        this._setStringAttribute('loading', value, {
+            validate: (v) => {
+
+                return v === EAGER || v === LAZY || v === DEFER || v === IDLE;
+            },
+            message: `Invalid loading value: "${value}". Valid values are: "${EAGER}", "${LAZY}", "${DEFER}", "${IDLE}".`
+        });
+    }
+
+
+    //MARK: src
+    get src() {
+        return this.getAttribute('src');
+    }
+    set src(value) {
+        this._setStringAttribute('src', value);
+    }
+
+    //MARK: src
+    get srcset() {
+        return this.getAttribute('srcset');
+    }
+    set srcset(value) {
+        this._setStringAttribute('srcset', value);
+    }
+
     //MARK: sanitize
     get sanitize() {
         return this.hasAttribute('sanitize');
@@ -290,14 +321,17 @@ export class SVGIsolateBase extends HTMLElement {
         return this.getAttribute('lazy-margin') ?? this.constructor.defaults.lazyMargin;
     }
     set lazyMargin(value) {
-        this.#setStringAttribute('lazy-margin', value, (v) => {
+        this._setStringAttribute('lazy-margin', value, {
+            validate: (v) => {
 
-            if (!CSS.supports('margin', value)) {
-                console.warn(`Invalid lazy-margin value: "${value}". It must be a valid CSS length.`);
-                return false;
-            }
+                if (!CSS.supports('margin', v)) {
+                    console.warn(`Invalid lazy-margin value: "${value}". It must be a valid CSS length.`);
+                    return false;
+                }
 
-            return true;
+                return true;
+            },
+            message: `Invalid lazy-margin value: "${value}". It must be a valid CSS length.`
         });
     }
 
@@ -309,29 +343,18 @@ export class SVGIsolateBase extends HTMLElement {
         return Number.isNaN(value) ? defaultValue : value;
     }
     set lazyThreshold(value) {
-
-        if (value == null) {
-            this.removeAttribute('lazy-threshold');
-            return;
-        }
-        value = Number(value);
-
-        if (Number.isNaN(value)) {
-            console.warn(`Invalid lazy-threshold value: "${value}". It must be a number.`);
-            return;
-        }
-        this.setAttribute('lazy-threshold', value);
+        this._setNumberAttribute('lazy-threshold', value, {
+            validate: (n) => n >= 0 && n <= 1,
+            message: `Invalid lazy-threshold value: "${value}". It must be a number between 0 and 1.`
+        });
     }
 
-    set base(value) {
-        if (value == null) {
-            this.removeAttribute('base');
-            return;
-        }
-        this.setAttribute('base', String(value));
-    }
+    //MARK: base
     get base() {
         return this.getAttribute('base') ?? this.constructor.defaults.base;
+    }
+    set base(value) {
+        this._setStringAttribute('base', value);
     }
 
     //MARK: exposeSVG
@@ -351,13 +374,17 @@ export class SVGIsolateBase extends HTMLElement {
         return this.getAttribute('width');
     }
     set width(value) {
-        this.#setStringAttribute('width', value, (v) => {
+        this._setStringAttribute('width', value, {
+            validate: (v) => {
 
-            if (!CSS.supports('width', value)) {
-                console.warn(`Invalid width value: "${value}". It must be a valid CSS length.`);
-                return false;
-            }
-            return true;
+                if (!CSS.supports('width', value)) {
+                    console.warn(`Invalid width value: "${value}". It must be a valid CSS length.`);
+                    return false;
+                }
+
+                return true;
+            },
+            message: `Invalid width value: "${value}". It must be a valid CSS length.`
         });
     }
 
@@ -365,13 +392,17 @@ export class SVGIsolateBase extends HTMLElement {
         return this.getAttribute('height');
     }
     set height(value) {
-        this.#setStringAttribute('height', value, (v) => {
+        this._setStringAttribute('height', value, {
+            validate: (v) => {
 
-            if (!CSS.supports('height', value)) {
-                console.warn(`Invalid height value: "${value}". It must be a valid CSS length.`);
-                return false;
-            }
-            return true;
+                if (!CSS.supports('height', value)) {
+                    console.warn(`Invalid height value: "${value}". It must be a valid CSS length.`);
+                    return false;
+                }
+
+                return true;
+            },
+            message: `Invalid height value: "${value}". It must be a valid CSS length.`
         });
     }
 
@@ -380,14 +411,14 @@ export class SVGIsolateBase extends HTMLElement {
         return this.getAttribute('preserveAspectRatio');
     }
     set preserveAspectRatio(value) {
-        this.#setStringAttribute('preserveAspectRatio', value);
+        this._setStringAttribute('preserveAspectRatio', value);
     }
 
     get viewBox() {
         return this.getAttribute('viewBox');
     }
     set viewBox(value) {
-        this.#setStringAttribute('viewBox', value);
+        this._setStringAttribute('viewBox', value);
     }
 }
 

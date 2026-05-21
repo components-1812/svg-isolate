@@ -1,3 +1,4 @@
+import { Debounce } from "./Debounce.js";
 import { ComponentStyles } from "./StyleSystem.js";
 import SVGIsolateBase from "./SVGIsolateBase.js";
 
@@ -5,34 +6,32 @@ import SVGIsolateBase from "./SVGIsolateBase.js";
 /**
  * Loading flow:
  *
- * connectedCallback | attributeChangedCallback [src, srcset] → #loadSource
+ * connectedCallback | attributeChangedCallback [src, srcset] → `_loadSource`
  *
- *   [srcset]  → #watchSrcset → ResizeObserver 
+ *   [srcset]  → `_watchSrcset` → ResizeObserver 
  *                                    └─ onResize(width) → 
  *                                            └─ ref = matchSource(this.sources.srcset, width)
- *                                            └─ #loadByStrategy(ref) → #loadSVG(src) → fetchSVG(src) [cache | network] → #renderSVG(rawSvg)
+ *                                            └─ `_loadByStrategy(ref)` → `_loadSVG(src)` → `fetchSVG(src)` [cache | network] → `_renderSVG(rawSvg)`
  *
- *   [src]     → #loadByStrategy(src) → #loadSVG(src) → fetchSVG(src) [cache | network] → #renderSVG(rawSvg)
+ *   [src]     → `_loadByStrategy(src)` → `_loadSVG(src)` → `fetchSVG(src)` [cache | network] → `_renderSVG(rawSvg)`
  *
- *   [default] → light DOM SVG → #renderSVG(svg)
+ *   [default] → light DOM SVG → `_renderSVG(svg)`
  *
  * 
  * Notes:
- *   - clear() runs at the start of #loadSource on every call except the first (connectedCallback)
+ *   - clear() runs at the start of `_loadSource` on every call except the first (connectedCallback)
  * 
- *   - src received by #loadSVG is always the raw value from the src | srcset attribute — 
+ *   - src received by `_loadSVG` is always the raw value from the src | srcset attribute — 
  *     resolveSource(src, base) is called here to produce the final URL passed to fetchSVG
  * 
- *   - SVGIsolate.sanitize(rawSvg) is called in #loadSVG after fetch and before #renderSVG
+ *   - SVGIsolate.sanitize(rawSvg) is called in `_loadSVG` after fetch and before `_renderSVG`
  * 
- *   - #currentSource is set in #loadSVG after a successful render — always reflects the live displayed SVG
+ *   - #currentSource is set in `_loadSVG` after a successful render — always reflects the live displayed SVG
  */
 
 export class SVGIsolate extends SVGIsolateBase {
 
     static observedAttributes = ['src', 'srcset', 'preserveAspectRatio', 'viewBox', 'width', 'height'];
-
-    static RESIZE_DEBOUNCE = 100;
 
     #connected = false;
 
@@ -58,7 +57,7 @@ export class SVGIsolate extends SVGIsolateBase {
 
     connectedCallback() {
 
-        this.#loadSource();
+        this._loadSource();
 
         this.#connected = true;
     }
@@ -71,13 +70,13 @@ export class SVGIsolate extends SVGIsolateBase {
             // srcset takes priority over src — handled by ResizeObserver
             case 'srcset':
             case 'src':
-                this.#loadSource();
+                this._loadSource();
                 break;
 
             // These attributes don't trigger a reload, but if an SVG is already rendered, update it
             case 'preserveAspectRatio':
             case 'viewBox':
-                return this.#updateSVG(name);
+                return this._updateSVG(name);
 
             case 'width':
             case 'height':
@@ -92,7 +91,7 @@ export class SVGIsolate extends SVGIsolateBase {
         this.clear();
     }
 
-    #updateSVG(name) {
+    _updateSVG(name) {
         const svg = this.shadowRoot.querySelector('svg');
         const value = this[name];
 
@@ -107,7 +106,7 @@ export class SVGIsolate extends SVGIsolateBase {
     }
 
     //MARK: Rendering
-    #renderSVG(svg) {
+    _renderSVG(svg) {
 
         // Raw SVG strings must be parsed into a DOM node before insertion
         if (typeof svg === 'string') {
@@ -139,7 +138,7 @@ export class SVGIsolate extends SVGIsolateBase {
         ]
             .forEach(attr => this.removeAttribute(attr));
 
-        this.#renderSVG(svg);
+        this._renderSVG(svg);
 
         this.setAttribute('ready', '');
         this.dispatchEvent(new CustomEvent('ready'));
@@ -153,7 +152,7 @@ export class SVGIsolate extends SVGIsolateBase {
         return this.#currentSource;
     }
 
-    async #loadSVG(src) {
+    async _loadSVG(src) {
 
         const { resolved } = this.constructor.resolveSource(src, this.base);
 
@@ -164,7 +163,7 @@ export class SVGIsolate extends SVGIsolateBase {
 
         try {
             // Use in-memory cache if enabled to avoid redundant fetches
-            let rawSvg = this.useCache
+            let { raw: rawSvg, size } = this.useCache
                 ? await this.constructor.CACHE.fetchSVG(resolved.href)
                 : await this.constructor.fetchSVG(resolved.href);
 
@@ -175,7 +174,7 @@ export class SVGIsolate extends SVGIsolateBase {
                 rawSvg = this.constructor.sanitize(rawSvg);
             }
 
-            this.#renderSVG(rawSvg);
+            this._renderSVG(rawSvg);
 
             this.#currentSource = { raw: src, resolved };
 
@@ -204,17 +203,17 @@ export class SVGIsolate extends SVGIsolateBase {
         this.src = src;
     }
 
-    #loadSource() {
+    _loadSource() {
 
         if (this.#connected) this.clear();
 
         switch (true) {
             case this.srcset != null:
-                this.#watchSrcset();
+                this._watchSrcset();
                 break;
 
             case this.src != null:
-                this.#loadByStrategy({ src: this.src });
+                this._loadByStrategy({ src: this.src });
                 break;
 
             default:
@@ -227,25 +226,25 @@ export class SVGIsolate extends SVGIsolateBase {
     }
 
     //MARK: Loading Strategies
-    #eagerLoad(src) {
-        this.#loadSVG(src);
+    _eagerLoad(src) {
+        this._loadSVG(src);
     }
-    #deferLoad(src) {
+    _deferLoad(src) {
 
-        if (document.readyState !== 'loading') this.#loadSVG(src);
+        if (document.readyState !== 'loading') this._loadSVG(src);
         else {
-            window.addEventListener('DOMContentLoaded', () => this.#loadSVG(src), { once: true });
+            window.addEventListener('DOMContentLoaded', () => this._loadSVG(src), { once: true });
         }
     }
-    #idleLoad(src) {
+    _idleLoad(src) {
 
         // requestIdleCallback is not fully supported in Safari stable (May 2026). Fallback to "defer".
         if (window.requestIdleCallback) {
-            window.requestIdleCallback(() => this.#loadSVG(src));
+            window.requestIdleCallback(() => this._loadSVG(src));
         }
         else {
             console.warn(`requestIdleCallback is not supported in this browser. Use "defer" loading strategy instead.`);
-            this.#deferLoad(src);
+            this._deferLoad(src);
         }
     }
     /**
@@ -255,7 +254,7 @@ export class SVGIsolate extends SVGIsolateBase {
      * recently resolved candidate is loaded — not the one captured at setup time.
      * @param {{ src: string }} ref - Shared source reference
      */
-    #lazyLoad(ref) {
+    _lazyLoad(ref) {
 
         if (this.observers.has('lazy')) return;
 
@@ -267,7 +266,7 @@ export class SVGIsolate extends SVGIsolateBase {
 
             if (entry.isIntersecting) {
 
-                this.#loadSVG(ref.src);
+                this._loadSVG(ref.src);
                 observer.disconnect();
                 this.observers.delete('lazy');
             }
@@ -281,22 +280,22 @@ export class SVGIsolate extends SVGIsolateBase {
         observer.observe(this);
         this.observers.set('lazy', observer);
     }
-    #loadByStrategy(ref) {
+    _loadByStrategy(ref) {
 
         const { EAGER, DEFER, IDLE, LAZY } = this.constructor.LOADING;
 
         switch (this.loading) {
-            case EAGER: this.#eagerLoad(ref.src);
+            case EAGER: this._eagerLoad(ref.src);
                 break;
-            case DEFER: this.#deferLoad(ref.src);
+            case DEFER: this._deferLoad(ref.src);
                 break;
-            case IDLE: this.#idleLoad(ref.src);
+            case IDLE: this._idleLoad(ref.src);
                 break;
-            case LAZY: this.#lazyLoad(ref);
+            case LAZY: this._lazyLoad(ref);
                 break;
             default:
                 console.warn(`Unknown loading strategy "${this.loading}". Falling back to "eager".`);
-                this.#eagerLoad(ref.src);
+                this._eagerLoad(ref.src);
         }
     }
 
@@ -328,8 +327,9 @@ export class SVGIsolate extends SVGIsolateBase {
         return sorted.at(-1);
     }
 
+    #responsiveDebounce = null;
 
-    #watchSrcset() {
+    _watchSrcset() {
 
         /**
          * Shared reference to the current resolved source.
@@ -346,26 +346,29 @@ export class SVGIsolate extends SVGIsolateBase {
 
                 ref.src = source.raw;
 
-                this.#loadByStrategy(ref);
+                this._loadByStrategy(ref);
             }
 
             if (!this.responsive) {
-                this.observers.get('resize').disconnect();
-                this.observers.delete('resize');
+
+                const observer = this.observers.get('resize');
+
+                if (observer) {
+                    observer.disconnect();
+                    this.observers.delete('resize');
+                }
+
+                this.#responsiveDebounce?.cancel();
             }
         }
 
-        let timeout;
-        const debounceTime = this.constructor.RESIZE_DEBOUNCE ?? 100;
+        this.#responsiveDebounce = new Debounce(onResize, this.constructor.RESIZE_DEBOUNCE ?? 100);
 
         const observer = new ResizeObserver(entries => {
 
             const width = entries[0].contentRect.width;
 
-            if (width > 0) {
-                if (timeout) clearTimeout(timeout);
-                timeout = setTimeout(() => onResize(width), debounceTime);
-            }
+            if (width > 0) this.#responsiveDebounce.run(width);
         });
 
         this.observers.set('resize', observer);
@@ -373,19 +376,23 @@ export class SVGIsolate extends SVGIsolateBase {
     }
 
 
-    /**
-     * Disconnects all active observers, removes the rendered SVG,
-     * and resets the component to its unloaded state.
-     * Called internally before every new load to ensure a clean slate.
-     */
     clear() {
+        //Cancel any pending resize events
+        this.#responsiveDebounce?.cancel();
+        this.#responsiveDebounce = null;
+
+        //Remove all observers
         this.observers.forEach(observer => observer.disconnect());
         this.observers.clear();
 
+        //Remove svg element
         const svg = this.shadowRoot.querySelector('svg');
         if (svg) svg.remove();
 
+        //Clear current source
         this.#currentSource = null;
+
+        //Remove ready attribute
         this.removeAttribute('ready');
     }
 }
