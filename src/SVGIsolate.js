@@ -6,16 +6,22 @@ import SVGIsolateBase from "./SVGIsolateBase.js";
 /**
  * Loading flow:
  *
- * connectedCallback | attributeChangedCallback [src, srcset] → `_loadSource`
- *
- *   [srcset]  → `_watchSrcset` → ResizeObserver 
- *                                    └─ onResize(width) → 
- *                                            └─ ref = matchSource(this.sources.srcset, width)
- *                                            └─ `_loadByStrategy(ref)` → `_loadSVG(src)` → `fetchSVG(src)` [cache | network] → `_renderSVG(rawSvg)`
- *
- *   [src]     → `_loadByStrategy(src)` → `_loadSVG(src)` → `fetchSVG(src)` [cache | network] → `_renderSVG(rawSvg)`
- *
- *   [default] → light DOM SVG → `_renderSVG(svg)`
+ * connectedCallback → `_loadSource`
+ * attributeChangedCallback [src, srcset] → #loadSourceDebounce.run() → `_loadSource`
+ * 
+ * `_loadSource`
+ *    |
+ *    └─ [srcset]  → `_watchSrcset` → ResizeObserver 
+ *    |                                     └─ onResize(width) → 
+ *    |                                             |
+ *    |                                             └─ ref = matchSource(this.sources.srcset, width)
+ *    |                                             |
+ *    |                                             └─ `_loadByStrategy(ref)` → `_loadSVG(src)` → `fetchSVG(src)` [cache | network] → `_renderSVG(rawSvg)`
+ *    |
+ *    |
+ *    └─ [src]     → `_loadByStrategy(src)` → `_loadSVG(src)` → `fetchSVG(src)` [cache | network] → `_renderSVG(rawSvg)`
+ *    |
+ *    └─ [default] → light DOM SVG → `_renderSVG(svg)`
  *
  * 
  * Notes:
@@ -34,6 +40,8 @@ export class SVGIsolate extends SVGIsolateBase {
     static observedAttributes = ['src', 'srcset', 'preserveAspectRatio', 'viewBox', 'width', 'height'];
 
     #connected = false;
+    #loadSourceDebounce = null;
+    #currentFetchIndex = null;
 
     constructor() {
         super();
@@ -57,7 +65,13 @@ export class SVGIsolate extends SVGIsolateBase {
 
     connectedCallback() {
 
-        this._loadSource();
+        // Usamos el debounce para agrupar la carga inicial con posibles cambios inmediatos
+        this.#loadSourceDebounce = new Debounce(() => {
+
+            this._loadSource();
+        }, 0);
+
+        this.#loadSourceDebounce.run();
 
         this.#connected = true;
     }
@@ -70,7 +84,7 @@ export class SVGIsolate extends SVGIsolateBase {
             // srcset takes priority over src — handled by ResizeObserver
             case 'srcset':
             case 'src':
-                this._loadSource();
+                this.#loadSourceDebounce?.run();
                 break;
 
             // These attributes don't trigger a reload, but if an SVG is already rendered, update it
@@ -88,19 +102,22 @@ export class SVGIsolate extends SVGIsolateBase {
     disconnectedCallback() {
         this.#connected = false;
 
+        this.#loadSourceDebounce?.cancel();
+        this.#loadSourceDebounce = null;
+
         this.clear();
     }
 
     _updateSVG(name) {
         const svg = this.shadowRoot.querySelector('svg');
-        const value = this[name];
+        if (!svg) return;
 
-        if (!svg || !value) return;
+        const value = this[name];
 
         switch (name) {
             case 'viewBox':
             case 'preserveAspectRatio':
-                svg.setAttribute(name, value);
+                value ? svg.setAttribute(name, value) : svg.removeAttribute(name);
                 break;
         }
     }
@@ -154,6 +171,10 @@ export class SVGIsolate extends SVGIsolateBase {
 
     async _loadSVG(src) {
 
+        // Generamos un token único para esta petición
+        const fetchIndex = (this.#currentFetchIndex ?? 0) + 1;
+        this.#currentFetchIndex = fetchIndex;
+
         const { resolved } = this.constructor.resolveSource(src, this.base);
 
         this.setAttribute('fetching', '');
@@ -174,9 +195,12 @@ export class SVGIsolate extends SVGIsolateBase {
                 rawSvg = this.constructor.sanitize(rawSvg);
             }
 
-            this._renderSVG(rawSvg);
-
+            // Check if this is still the most recent fetch request
+            if (this.#currentFetchIndex !== fetchIndex) return;
+             
             this.#currentSource = { raw: src, resolved };
+
+            this._renderSVG(rawSvg);
 
             this.setAttribute('ready', '');
             this.dispatchEvent(new CustomEvent('ready'));
@@ -185,7 +209,12 @@ export class SVGIsolate extends SVGIsolateBase {
             console.warn(`SVG load failed for "${src}":`, error);
         }
         finally {
-            this.removeAttribute('fetching');
+            // Ensure we only remove the fetching attribute if this was the latest request
+            if (this.#currentFetchIndex === fetchIndex) {
+                
+                this.removeAttribute('fetching');
+                this.#currentFetchIndex = null;
+            }
         }
     }
     loadSVG(src, opt = {}) {
