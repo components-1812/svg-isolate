@@ -20,12 +20,32 @@ const links = [
 
 const svg = document.querySelector('svg-isolate');
 
-// for(const src of links) {
-    
+svg.addEventListener('fetching', (e) => {
+
+    console.log('Fetching:', e.detail);
+});
+
+/**
+ * Synchronous (Code-driven)
+ * 
+ * Prevented using debounce with timeout 0. 
+ * JS waits for the current execution stack to clear after the loop finishes.
+ */
+// for (const src of links) {
 //     svg.src = src;
-//     //svg.loadSVG(src);
+//     // svg.loadSVG(src);
 // }
 
+
+/**
+ * Asynchronous (Network-driven)
+ * 
+ * Prevented using request fetch index counter (#currentFetchIndex).
+ * 
+ * If a newer request is started before an older request finishes fetching, 
+ * the older request's index value will no longer match the current active index, 
+ * and its resolved SVG will be safely discarded rather than rendered.
+ */
 const iterator = links.values();
 
 const id = setInterval(() => {
@@ -37,7 +57,7 @@ const id = setInterval(() => {
         return;
     }
 
-    console.log(value);
+    console.log('Interval set src to:', value);
     svg.src = value;
 
 }, 10);

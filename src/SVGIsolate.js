@@ -79,9 +79,10 @@ export class SVGIsolate extends SVGIsolateBase {
         this.#connected = true;
     }
 
+    //When: value is changed, the element is in the DOM and not call renderSVG manual
     attributeChangedCallback(name, oldValue, newValue) {
 
-        if (!this.#connected || oldValue === newValue) return;
+        if (!this.#connected || oldValue === newValue || this.#manualRender) return;
 
         switch (name) {
             // srcset takes priority over src — handled by ResizeObserver
@@ -148,20 +149,25 @@ export class SVGIsolate extends SVGIsolateBase {
         }
     }
 
+    #manualRender = false;
+
     renderSVG(svg) {
+        this.#manualRender = true;
         this.clear();//Clear observers and currentSource
 
         //Clear all sources attributes, setting in SVGNode mode
         [
             'src', 'srcset', 'no-cache', 'responsive',
-            'loading', 'lazy-margin', 'lazy-threshold', 'base'
+            'loading', 'lazy-margin', 'lazy-threshold', 'base',
+            'ready', 'fetching'
         ]
-            .forEach(attr => this.removeAttribute(attr));
+        .forEach(attr => this.removeAttribute(attr));
 
         this._renderSVG(svg);
 
         this.setAttribute('ready', '');
         this.dispatchEvent(new CustomEvent('ready'));
+        this.#manualRender = false;
     }
 
 
@@ -250,7 +256,7 @@ export class SVGIsolate extends SVGIsolateBase {
 
             default:
                 const svg = this.querySelector('svg');
-                if (svg) this.shadowRoot.append(svg);
+                if (svg) this.shadowRoot.append( svg.cloneNode(true) );
 
                 this.dispatchEvent(new CustomEvent('ready'));
                 this.setAttribute('ready', '');

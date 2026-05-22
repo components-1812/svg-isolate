@@ -4,6 +4,21 @@ A web component that loads, caches, and renders SVG files in an isolated shadow 
 
 ---
 
+## Distribution & Installation
+
+The package provides different builds depending on your usage needs:
+
+### 1. Standard Module (`SVGIsolate.js` / `SVGIsolate.min.js`)
+The base ESM module. It bundles the core logic and cache system, but **does not** include inline CSS.
+- You must call `SVGIsolate.define()` manually.
+- You should include the accompanying **`SVGIsolate.css`** (or `.min.css`) in your document if you rely on the host's structural styles.
+
+### 2. All-in-one Bundle (`index.bundle.js` / `index.bundle.min.js`)
+The fully integrated bundle. It includes everything from the standard module, but uses a build plugin to inject the required CSS inline directly into the component.
+- Ideal for quick setups or when you want a completely self-contained component without managing external CSS files.
+
+<br>
+
 ## Loading Flow
 
 ```mermaid
@@ -108,9 +123,7 @@ connectedCallback | attributeChangedCallback [src, srcset] → #loadSourceDeboun
 ```
 
 Notes:
-- `#loadSourceDebounce` init in `connectedCallback()` and dispose in `disconnectedCallback()`
 
-	With timeout 0 `#loadSourceDebounce` prevent race conditions when src | srcset attributes recive multiples updates in a single task.
 
 - `clear()` runs at the start of `_loadSource` on every call except the first (connectedCallback)
  
@@ -119,6 +132,10 @@ Notes:
 - `SVGIsolate.sanitize(rawSvg)` is called in `_loadSVG` after fetch and before `_renderSVG`
 
 - `#currentSource` is set in `_loadSVG` after a successful render — always reflects the live displayed SVG
+
+- **Light DOM Fallback:** When falling back to the default Light DOM `<svg>`, 
+the component **clones** the original node (`cloneNode(true)`) instead of moving it. 
+This ensures the original SVG is safely preserved in the Light DOM even if the component is disconnected and reconnected later
 
 
 
@@ -319,7 +336,7 @@ Read-only computed property that parses `src` and `srcset` into structured objec
 | Field    | Type                                                    | Description                                                                                                                                                             |
 | -------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src`    | `{ raw: string \| null, resolved: URL \| null }`        | Parsed `src` attribute. `raw` is the attribute value as-is, `resolved` is the absolute URL after applying `base`                                                        |
-| `srcset` | `Array<{ raw: string, resolved: URL, width: number }>` | Parsed `srcset` candidates in declaration order. Each entry contains the raw value, the resolved absolute URL (with `base` applied), and the width from the `w` descriptor |
+| `srcset` | `Array<{ raw: string, resolved: URL, width: number }>`  | Parsed `srcset` candidates in declaration order. Each entry contains the raw value, the resolved absolute URL (with `base` applied), and the width from the `w` descriptor |
 
 ```js
 // src="icon.svg" base="/assets"
@@ -369,7 +386,9 @@ el.loadSVG("circle.svg", { base: "https://cdn.example.com/icons" });
 
 Renders an SVG into the shadow DOM. Dispatches the `ready` event and sets the `ready` attribute on completion.
 
-> **Note**: When called directly, this method clears any active observers and removes all source-related attributes (`src`, `srcset`, `responsive`, `loading`, etc.) to put the component into a manual/light DOM mode.
+> **Note**: When called directly, this method clears any active observers and removes all source-related and state-related attributes (`src`, `srcset`, `no-cache`, `responsive`, `loading`, `lazy-margin`, `lazy-threshold`, `base`, `ready`, `fetching`) to put the component into a manual/light DOM mode.
+>
+> **Performance detail**: While clearing these attributes, the component temporarily suppresses its reactivity (`attributeChangedCallback`) to prevent a cascade of redundant DOM updates, prevent false `ready` events, and avoid performance bottlenecks.
 
 | Parameter | Type                   | Description                       |
 | --------- | ---------------------- | --------------------------------- |
@@ -488,6 +507,29 @@ el.addEventListener("ready-links", ({ detail }) => {
 	// [{ link: <HTMLLinkElement>, href: '/styles.css', status: 'loaded' }, ...]
 });
 ```
+
+<br>
+
+### Race Condition Prevention
+The component protects against two distinct types of race conditions:
+
+- **Synchronous (Code-driven):** 
+  
+  When `src` or `srcset` is updated multiple times sequentially in the same execution turn (e.g., inside a `for` loop). 
+
+  This is prevented by the `#loadSourceDebounce` debounce (initialized in `connectedCallback` and disposed in `disconnectedCallback`).
+
+  With a timeout of `0` ms, it schedules the loading logic to run asynchronously after the current synchronous block has fully completed execution, 
+  ensuring only the final state is requested.
+
+- **Asynchronous (Time-spaced / Network-driven):** 
+
+    When `src` is updated over time (e.g., via rapid clicks or a `setInterval`), initiating multiple network requests that may resolve out-of-order due to network latency. 
+  
+    This is prevented using unique request indexes (`fetchIndex` / `#currentFetchIndex`). 
+    
+    If a newer request is started before an older request finishes fetching, the older request's index value will no longer match the current active index, 
+    and its resolved SVG will be safely discarded rather than rendered.
 
 <br>
 
