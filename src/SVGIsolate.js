@@ -6,8 +6,7 @@ import SVGIsolateBase from "./SVGIsolateBase.js";
 /**
  * Loading flow:
  *
- * connectedCallback → `_loadSource`
- * attributeChangedCallback [src, srcset] → #loadSourceDebounce.run() → `_loadSource`
+ * connectedCallback | attributeChangedCallback [src, srcset] → #loadSourceDebounce.run() → `_loadSource`
  * 
  * `_loadSource`
  *    |
@@ -25,6 +24,10 @@ import SVGIsolateBase from "./SVGIsolateBase.js";
  *
  * 
  * Notes:
+ *   - #loadSourceDebounce init in connectedCallback() and dispose in disconnectedCallback()
+ *     With timeout 0 #loadSourceDebounce prevent race conditions when src | srcset attributes 
+ *     recive multiples updates in a single task.
+ *
  *   - clear() runs at the start of `_loadSource` on every call except the first (connectedCallback)
  * 
  *   - src received by `_loadSVG` is always the raw value from the src | srcset attribute — 

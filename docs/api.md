@@ -7,38 +7,120 @@ A web component that loads, caches, and renders SVG files in an isolated shadow 
 ## Loading Flow
 
 ```mermaid
-flowchart TD
-    Entry["connectedCallback\nattributeChangedCallback [src, srcset]"]
-    Entry --> loadSource
+graph LR
+    subgraph Triggers [Triggers]
+        direction TB
+        CC[connectedCallback]
+        ACC[attributeChangedCallback]
+    end
 
-    loadSource["#loadSource\n─ clear() on every call except the first ─"]
-    loadSource --> branch{Which source?}
+    Debounce{{"#loadSourceDebounce<br/>(microtask)"}}
 
-    branch -- srcset --> watchSrcset["#watchSrcset\nResizeObserver"]
-    watchSrcset --> resize["onResize(width)\nmatchSource(sources.srcset, width)"]
-    resize --> strategy
+    subgraph Logic [Loading Logic]
+        LS["_loadSource()"]
+        Clear["clear()<br/>(Clean observers & DOM)"]
+        Type{Which source?}
+    end
 
-    branch -- src --> strategy["#loadByStrategy\neager | defer | idle | lazy"]
+    subgraph Responsive [Responsive Management]
+        WS["_watchSrcset()"]
+        RO["ResizeObserver"]
+        Match["matchSource()"]
+    end
 
-    branch -- neither --> lightDOM["light DOM SVG\nquerySelector('svg')"]
-    lightDOM --> renderSVG
+    subgraph Strategy [Loading Strategy]
+        Strat["_loadByStrategy()"]
+        Modes{"loading"}
+        Eager["eager"]
+        Defer["defer<br/>(DOMContentLoaded)"]
+        Idle["idle<br/>(requestIdleCallback)"]
+        Lazy["lazy<br/>(Viewport)"]
+    end
 
-    strategy --> loadSVG["#loadSVG(src)"]
-    loadSVG --> resolve["resolveSource(src, base)\n→ resolved URL"]
-    resolve --> fetch["fetchSVG(resolved)\ncache | network"]
-    fetch --> san{sanitize?}
-    san -- yes --> sanitize["SVGIsolate.sanitize(rawSvg)"]
-    sanitize --> renderSVG["#renderSVG(svg)"]
-    san -- no --> renderSVG
+    subgraph Process [Fetch & Processing]
+        LoadSVG["_loadSVG(src)"]
+        Res["resolveSource()"]
+        Fetch["fetchSVG()"]
+        Cache[("Memory Cache")]
+        San{Sanitize?}
+        SanOp["SVGIsolate.sanitize()"]
+    end
 
-    renderSVG --> events["removeAttribute('fetching')\nsetAttribute('ready')\ndispatchEvent('ready')"]
+    subgraph Output [Rendering]
+        RenderNode["_renderSVG()"]
+        Ready["Finish:<br/>[ready] attribute<br/>'ready' event"]
+    end
+
+    %% Connections
+    CC --> Debounce
+    ACC --> Debounce
+    Debounce --> LS
+    LS --> Clear
+    Clear --> Type
+
+    Type -- srcset --> WS
+    WS --> RO
+    RO --> Match
+    Match --> Strat
+
+    Type -- src --> Strat
+    Type -- default --> RenderNode
+
+    Strat --> Modes
+    Modes --> Eager & Defer & Idle & Lazy
+    Eager & Defer & Idle & Lazy --> LoadSVG
+
+    LoadSVG --> Res
+    Res --> Fetch
+    Fetch <--> Cache
+    Fetch --> San
+    San -- yes --> SanOp
+    SanOp --> RenderNode
+    San -- no --> RenderNode
+
+    RenderNode --> Ready
+
+    %% Styling
+    style Debounce fill:#f9,stroke:#333
+    style Cache fill:#e1f5fe,stroke:#01579b
+    style Type fill:#fff9c4,stroke:#fbc02d
+    style Modes fill:#fff9c4,stroke:#fbc02d
 ```
 
-> **Notes**
-> - `clear()` is skipped on the very first `connectedCallback` call.
-> - `src` passed to `#loadSVG` is always the **raw attribute value** — `resolveSource(src, base)` is called inside `#loadSVG` to produce the final URL.
-> - `sanitize` only runs if `SVGIsolate.sanitize` is set **and** the `sanitize` attribute is present on the instance.
-> - `currentSource` is set after a successful render and always reflects the currently displayed SVG.
+```txt
+Loading flow:
+
+connectedCallback | attributeChangedCallback [src, srcset] → #loadSourceDebounce.run() → `_loadSource`
+
+`_loadSource`
+    |
+    └─ [srcset]  → `_watchSrcset` → ResizeObserver 
+    |                                     └─ onResize(width) → 
+    |                                             |
+    |                                             └─ ref = matchSource(this.sources.srcset, width)
+    |                                             |
+    |                                             └─ `_loadByStrategy(ref)` → `_loadSVG(src)` → `fetchSVG(src)` [cache | network] → `_renderSVG(rawSvg)`
+    |
+    |
+    └─ [src]     → `_loadByStrategy(src)` → `_loadSVG(src)` → `fetchSVG(src)` [cache | network] → `_renderSVG(rawSvg)`
+    |
+    └─ [default] → light DOM SVG → `_renderSVG(svg)`
+```
+
+Notes:
+- `#loadSourceDebounce` init in `connectedCallback()` and dispose in `disconnectedCallback()`
+
+	With timeout 0 `#loadSourceDebounce` prevent race conditions when src | srcset attributes recive multiples updates in a single task.
+
+- `clear()` runs at the start of `_loadSource` on every call except the first (connectedCallback)
+ 
+- src received by `_loadSVG` is always the raw value from the src | srcset attribute — `resolveSource(src, base)` is called here to produce the final URL passed to `fetchSVG`
+ 
+- `SVGIsolate.sanitize(rawSvg)` is called in `_loadSVG` after fetch and before `_renderSVG`
+
+- `#currentSource` is set in `_loadSVG` after a successful render — always reflects the live displayed SVG
+
+
 
 ---
 
