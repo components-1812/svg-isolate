@@ -9,12 +9,16 @@ A web component that loads, caches, and renders SVG files in an isolated shadow 
 The package provides different builds depending on your usage needs:
 
 ### 1. Standard Module (`SVGIsolate.js` / `SVGIsolate.min.js`)
+
 The base ESM module. It bundles the core logic and cache system, but **does not** include inline CSS.
+
 - You must call `SVGIsolate.define()` manually.
 - You should include the accompanying **`SVGIsolate.css`** (or `.min.css`) in your document if you rely on the host's structural styles.
 
 ### 2. All-in-one Bundle (`index.bundle.js` / `index.bundle.min.js`)
+
 The fully integrated bundle. It includes everything from the standard module, but uses a build plugin to inject the required CSS inline directly into the component.
+
 - Ideal for quick setups or when you want a completely self-contained component without managing external CSS files.
 
 <br>
@@ -109,8 +113,8 @@ connectedCallback | attributeChangedCallback [src, srcset] → #loadSourceDeboun
 
 `_loadSource`
     |
-    └─ [srcset]  → `_watchSrcset` → ResizeObserver 
-    |                                     └─ onResize(width) → 
+    └─ [srcset]  → `_watchSrcset` → ResizeObserver
+    |                                     └─ onResize(width) →
     |                                             |
     |                                             └─ ref = matchSource(this.sources.srcset, width)
     |                                             |
@@ -124,20 +128,17 @@ connectedCallback | attributeChangedCallback [src, srcset] → #loadSourceDeboun
 
 Notes:
 
-
 - `clear()` runs at the start of `_loadSource` on every call except the first (connectedCallback)
- 
+
 - src received by `_loadSVG` is always the raw value from the src | srcset attribute — `resolveSource(src, base)` is called here to produce the final URL passed to `fetchSVG`
- 
+
 - `SVGIsolate.sanitize(rawSvg)` is called in `_loadSVG` after fetch and before `_renderSVG`
 
 - `#currentSource` is set in `_loadSVG` after a successful render — always reflects the live displayed SVG
 
-- **Light DOM Fallback:** When falling back to the default Light DOM `<svg>`, 
-the component **clones** the original node (`cloneNode(true)`) instead of moving it. 
-This ensures the original SVG is safely preserved in the Light DOM even if the component is disconnected and reconnected later
-
-
+- **Light DOM Fallback:** When falling back to the default Light DOM `<svg>`,
+  the component **clones** the original node (`cloneNode(true)`) instead of moving it.
+  This ensures the original SVG is safely preserved in the Light DOM even if the component is disconnected and reconnected later
 
 ---
 
@@ -151,6 +152,7 @@ This ensures the original SVG is safely preserved in the Light DOM even if the c
 | `DEFAULT_TAG_NAME`  | `string`                       | `'svg-isolate'` | Default tag name used when calling `define()`                                        |
 | `CACHE_ENABLED`     | `boolean`                      | `true`          | Enables or disables the cache system entirely. Must be set before `define()`         |
 | `CACHE_MAX_ENTRIES` | `number`                       | `100`           | Maximum number of entries the cache holds. Must be set before `define()`             |
+| `CACHE_MAX_SIZE`    | `number \| string`             | `Infinity`      | Maximum cumulative size of entries the cache holds (supports string units e.g., `'10mb'`, `'500kb'`). Parsed before `define()` |
 | `RESIZE_DEBOUNCE`   | `number`                       | `100`           | Debounce time in milliseconds for the resize observer when `responsive` is `true`    |
 | `CACHE`             | `SVGIsolateCache`              | —               | Cache instance. Created automatically by `define()` if `CACHE_ENABLED` is `true`     |
 | `sanitize`          | `Function \| null`             | `null`          | Static sanitizer function. Receives a raw SVG string and returns a sanitized string  |
@@ -259,9 +261,9 @@ const sanitized = await SVGIsolate.fetchSVG("/assets/icon.svg", {
 
 Resolves a `src` value against a `base` URL using the same algorithm the component uses internally when loading SVGs.
 
-| Parameter | Type             | Description                                                                        |
-| --------- | ---------------- | ---------------------------------------------------------------------------------- |
-| `src`     | `string`         | The raw source value — may be absolute, root-relative, or relative                 |
+| Parameter | Type             | Description                                                                         |
+| --------- | ---------------- | ----------------------------------------------------------------------------------- |
+| `src`     | `string`         | The raw source value — may be absolute, root-relative, or relative                  |
 | `base`    | `string \| null` | Base path or URL to resolve against. If `null` or `"/"`, `document.baseURI` is used |
 
 Returns `{ resolved: URL, parts: { origin, basePath, srcPath, search, hash } } | null`.
@@ -287,10 +289,10 @@ SVGIsolate.resolveSource("https://cdn.example.com/icon.svg", "/docs");
 
 Selects the best candidate from a parsed srcset array for a given display width. Picks the smallest candidate whose intrinsic width covers the target width. If no candidate is large enough, returns the largest as a fallback.
 
-| Parameter    | Type                                              | Description                                    |
-| ------------ | ------------------------------------------------- | ---------------------------------------------- |
+| Parameter    | Type                                                   | Description                                              |
+| ------------ | ------------------------------------------------------ | -------------------------------------------------------- |
 | `candidates` | `Array<{ raw: string, resolved: URL, width: number }>` | Parsed srcset candidates (e.g. from `el.sources.srcset`) |
-| `width`      | `number`                                          | Target display width in pixels                 |
+| `width`      | `number`                                               | Target display width in pixels                           |
 
 Returns `{ raw: string, resolved: URL, width: number } | null`.
 
@@ -299,7 +301,7 @@ const best = SVGIsolate.matchSource(el.sources.srcset, 450);
 // candidates: 300w, 600w, 900w → picks 600w (smallest that covers 450px)
 
 console.log(best.resolved.href); // 'https://example.com/icon-600.svg'
-console.log(best.width);         // 600
+console.log(best.width); // 600
 ```
 
 <br>
@@ -308,35 +310,35 @@ console.log(best.width);         // 600
 
 ## Instance Properties
 
-| Property              | Type                        | Attribute             | Default   | Description                                                                                                                     |
-| --------------------- | --------------------------- | --------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `src`                 | `string \| null`            | `src`                 | `null`    | URL of the SVG file to load                                                                                                     |
-| `srcset`              | `string \| null`            | `srcset`              | `null`    | Comma-separated list of SVG candidates with width descriptors                                                                   |
-| `base`                | `string`                    | `base`                | `"/"`     | Base path or URL used to resolve `src`. Falls back to `defaults.base` when the attribute is not set                             |
-| `sources`             | `object`                    | —                     | —         | Parsed `src` and `srcset` as structured URL objects. Read-only                                                                  |
-| `currentSource`       | `{ raw: string, resolved: URL } \| null` | —        | `null`    | The source that is currently rendered. `null` until the first successful load. Read-only                                        |
-| `loading`             | `string`                    | `loading`             | `'eager'` | Loading strategy. One of `eager`, `defer`, `idle`, `lazy`                                                                       |
-| `useCache`            | `boolean`                   | `no-cache`            | `true`    | Whether to use the in-memory cache for this instance                                                                            |
-| `sanitize`            | `boolean`                   | `sanitize`            | `false`   | Whether to sanitize the SVG before rendering                                                                                    |
-| `responsive`          | `boolean`                   | `responsive`          | `false`   | Whether to listen for resize events and swap candidates automatically                                                           |
-| `lazyMargin`          | `string`                    | `lazy-margin`         | `'0px'`   | `rootMargin` passed to the `IntersectionObserver` for lazy loading                                                              |
-| `lazyThreshold`       | `number`                    | `lazy-threshold`      | `0`       | `threshold` passed to the `IntersectionObserver` for lazy loading                                                               |
-| `preserveAspectRatio` | `string \| null`            | `preserveAspectRatio` | `null`    | Forwarded to the rendered `<svg>` element                                                                                       |
-| `viewBox`             | `string \| null`            | `viewBox`             | `null`    | Forwarded to the rendered `<svg>` element                                                                                       |
-| `observers`           | `Map`                       | —                     | —         | Active observers keyed by name (`'lazy'`, `'resize'`). Read-only                                                                |
-| `exposeSVG`           | `string \| boolean \| null` | `expose-svg`          | `null`    | Exposes the inner `<svg>` via `::part()`. `true` uses `'svg'` as the part name, a string sets a custom name, `null` disables it |
-| `width`               | `string \| null`            | `width`               | `null`    | Sets `style.width` on the host element. Accepts any valid CSS length. Validated via `CSS.supports()`                            |
-| `height`              | `string \| null`            | `height`              | `null`    | Sets `style.height` on the host element. Accepts any valid CSS length. Validated via `CSS.supports()`                           |
-| `componentStyles`     | `ComponentStyles`           | —                     | —         | Style manager for this instance's shadow DOM. See [styles.md](./styles.md)                                                      |
+| Property              | Type                                     | Attribute             | Default   | Description                                                                                                                     |
+| --------------------- | ---------------------------------------- | --------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `src`                 | `string \| null`                         | `src`                 | `null`    | URL of the SVG file to load                                                                                                     |
+| `srcset`              | `string \| null`                         | `srcset`              | `null`    | Comma-separated list of SVG candidates with width descriptors                                                                   |
+| `base`                | `string`                                 | `base`                | `"/"`     | Base path or URL used to resolve `src`. Falls back to `defaults.base` when the attribute is not set                             |
+| `sources`             | `object`                                 | —                     | —         | Parsed `src` and `srcset` as structured URL objects. Read-only                                                                  |
+| `currentSource`       | `{ raw: string, resolved: URL } \| null` | —                     | `null`    | The source that is currently rendered. `null` until the first successful load. Read-only                                        |
+| `loading`             | `string`                                 | `loading`             | `'eager'` | Loading strategy. One of `eager`, `defer`, `idle`, `lazy`                                                                       |
+| `useCache`            | `boolean`                                | `no-cache`            | `true`    | Whether to use the in-memory cache for this instance                                                                            |
+| `sanitize`            | `boolean`                                | `sanitize`            | `false`   | Whether to sanitize the SVG before rendering                                                                                    |
+| `responsive`          | `boolean`                                | `responsive`          | `false`   | Whether to listen for resize events and swap candidates automatically                                                           |
+| `lazyMargin`          | `string`                                 | `lazy-margin`         | `'0px'`   | `rootMargin` passed to the `IntersectionObserver` for lazy loading                                                              |
+| `lazyThreshold`       | `number`                                 | `lazy-threshold`      | `0`       | `threshold` passed to the `IntersectionObserver` for lazy loading                                                               |
+| `preserveAspectRatio` | `string \| null`                         | `preserveAspectRatio` | `null`    | Forwarded to the rendered `<svg>` element                                                                                       |
+| `viewBox`             | `string \| null`                         | `viewBox`             | `null`    | Forwarded to the rendered `<svg>` element                                                                                       |
+| `observers`           | `Map`                                    | —                     | —         | Active observers keyed by name (`'lazy'`, `'resize'`). Read-only                                                                |
+| `exposeSVG`           | `string \| boolean \| null`              | `expose-svg`          | `null`    | Exposes the inner `<svg>` via `::part()`. `true` uses `'svg'` as the part name, a string sets a custom name, `null` disables it |
+| `width`               | `string \| null`                         | `width`               | `null`    | Sets `style.width` on the host element. Accepts any valid CSS length. Validated via `CSS.supports()`                            |
+| `height`              | `string \| null`                         | `height`              | `null`    | Sets `style.height` on the host element. Accepts any valid CSS length. Validated via `CSS.supports()`                           |
+| `componentStyles`     | `ComponentStyles`                        | —                     | —         | Style manager for this instance's shadow DOM. See [styles.md](./styles.md)                                                      |
 
 ### `sources`
 
 Read-only computed property that parses `src` and `srcset` into structured objects with resolved URLs.
 
-| Field    | Type                                                    | Description                                                                                                                                                             |
-| -------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src`    | `{ raw: string \| null, resolved: URL \| null }`        | Parsed `src` attribute. `raw` is the attribute value as-is, `resolved` is the absolute URL after applying `base`                                                        |
-| `srcset` | `Array<{ raw: string, resolved: URL, width: number }>`  | Parsed `srcset` candidates in declaration order. Each entry contains the raw value, the resolved absolute URL (with `base` applied), and the width from the `w` descriptor |
+| Field    | Type                                                   | Description                                                                                                                                                                |
+| -------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src`    | `{ raw: string \| null, resolved: URL \| null }`       | Parsed `src` attribute. `raw` is the attribute value as-is, `resolved` is the absolute URL after applying `base`                                                           |
+| `srcset` | `Array<{ raw: string, resolved: URL, width: number }>` | Parsed `srcset` candidates in declaration order. Each entry contains the raw value, the resolved absolute URL (with `base` applied), and the width from the `w` descriptor |
 
 ```js
 // src="icon.svg" base="/assets"
@@ -367,11 +369,11 @@ Malformed candidates are silently dropped — the rest of the candidates remain 
 
 Fetches and renders an SVG from the given URL. Respects the current `useCache` and `sanitize` settings unless overridden via `opt`.
 
-| Parameter      | Type      | Default | Description                                                         |
-| -------------- | --------- | ------- | ------------------------------------------------------------------- |
-| `src`          | `string`  | —       | URL of the SVG file to load (set as the `src` attribute)            |
-| `opt.base`     | `string`  | —       | Override the `base` attribute for this load                         |
-| `opt.useCache` | `boolean` | —       | Override the `useCache` setting for this load                       |
+| Parameter      | Type      | Default | Description                                              |
+| -------------- | --------- | ------- | -------------------------------------------------------- |
+| `src`          | `string`  | —       | URL of the SVG file to load (set as the `src` attribute) |
+| `opt.base`     | `string`  | —       | Override the `base` attribute for this load              |
+| `opt.useCache` | `boolean` | —       | Override the `useCache` setting for this load            |
 
 Returns `void`.
 
@@ -452,11 +454,11 @@ Changes to these attributes are observed and trigger the component to update aut
 
 Set by the component to reflect its current state. Read-only.
 
-| Attribute     | Description                                                                  |
-| ------------- | ---------------------------------------------------------------------------- |
-| `fetching`    | Present while the SVG is being fetched. Removed once the fetch completes     |
-| `ready`       | Present when the SVG has been successfully rendered                          |
-| `ready-links` | Present when all external stylesheets have finished loading                  |
+| Attribute     | Description                                                              |
+| ------------- | ------------------------------------------------------------------------ |
+| `fetching`    | Present while the SVG is being fetched. Removed once the fetch completes |
+| `ready`       | Present when the SVG has been successfully rendered                      |
+| `ready-links` | Present when all external stylesheets have finished loading              |
 
 ---
 
@@ -468,14 +470,14 @@ Set by the component to reflect its current state. Read-only.
 
 Fired before each fetch begins — on load, on `src`/`srcset` changes, and on srcset candidate swaps.
 
-| Property          | Type     | Description                                              |
-| ----------------- | -------- | -------------------------------------------------------- |
-| `detail.src`      | `string` | The raw value from the `src`/`srcset` attribute          |
-| `detail.resolved` | `URL`    | Fully resolved URL object passed to the fetch            |
+| Property          | Type     | Description                                     |
+| ----------------- | -------- | ----------------------------------------------- |
+| `detail.src`      | `string` | The raw value from the `src`/`srcset` attribute |
+| `detail.resolved` | `URL`    | Fully resolved URL object passed to the fetch   |
 
 ```js
 el.addEventListener("fetching", ({ detail }) => {
-	console.log(detail.src);          // 'circle.svg'
+	console.log(detail.src); // 'circle.svg'
 	console.log(detail.resolved.href); // 'https://cdn.example.com/icons/circle.svg'
 });
 ```
@@ -511,24 +513,25 @@ el.addEventListener("ready-links", ({ detail }) => {
 <br>
 
 ### Race Condition Prevention
+
 The component protects against two distinct types of race conditions:
 
-- **Synchronous (Code-driven):** 
-  
-  When `src` or `srcset` is updated multiple times sequentially in the same execution turn (e.g., inside a `for` loop). 
+- **Synchronous (Code-driven):**
 
-  This is prevented by the `#loadSourceDebounce` debounce (initialized in `connectedCallback` and disposed in `disconnectedCallback`).
+    When `src` or `srcset` is updated multiple times sequentially in the same execution turn (e.g., inside a `for` loop).
 
-  With a timeout of `0` ms, it schedules the loading logic to run asynchronously after the current synchronous block has fully completed execution, 
-  ensuring only the final state is requested.
+    This is prevented by the `#loadSourceDebounce` debounce (initialized in `connectedCallback` and disposed in `disconnectedCallback`).
 
-- **Asynchronous (Time-spaced / Network-driven):** 
+    With a timeout of `0` ms, it schedules the loading logic to run asynchronously after the current synchronous block has fully completed execution,
+    ensuring only the final state is requested.
 
-    When `src` is updated over time (e.g., via rapid clicks or a `setInterval`), initiating multiple network requests that may resolve out-of-order due to network latency. 
-  
-    This is prevented using unique request indexes (`fetchIndex` / `#currentFetchIndex`). 
-    
-    If a newer request is started before an older request finishes fetching, the older request's index value will no longer match the current active index, 
+- **Asynchronous (Time-spaced / Network-driven):**
+
+    When `src` is updated over time (e.g., via rapid clicks or a `setInterval`), initiating multiple network requests that may resolve out-of-order due to network latency.
+
+    This is prevented using unique request indexes (`fetchIndex` / `#currentFetchIndex`).
+
+    If a newer request is started before an older request finishes fetching, the older request's index value will no longer match the current active index,
     and its resolved SVG will be safely discarded rather than rendered.
 
 <br>
@@ -541,29 +544,64 @@ The cache instance accessible via `SVGIsolate.CACHE`. Created automatically by `
 
 ### Properties
 
-| Property     | Type                   | Description                                       |
-| ------------ | ---------------------- | ------------------------------------------------- |
-| `values`     | `Map<string, string>`  | All cached SVG strings keyed by URL               |
-| `pending`    | `Map<string, Promise>` | In-flight requests keyed by URL                   |
-| `owner`      | `typeof SVGIsolate`    | The component class that owns this cache instance |
-| `maxEntries` | `number`               | Maximum number of entries before eviction         |
+| Property     | Type                                                      | Description                                                                                          |
+| ------------ | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `values`     | `Map<string, { raw: string, size: number }>`              | All cached SVG records (including raw content and size in bytes) keyed by URL                        |
+| `pending`    | `Map<string, Promise<{ raw: string, size: number }\|null>>`| In-flight requests keyed by URL                                                                      |
+| `owner`      | `typeof SVGIsolate`                                       | The component class that owns this cache instance                                                    |
+| `maxEntries` | `number`                                                  | Maximum number of entries before eviction                                                            |
+| `maxSize`    | `number`                                                  | Maximum cumulative size in bytes before eviction (parsed during initialization)                     |
+| `size`       | `object`                                                  | Returns current cache statistics: `{ values: number, pending: number, bytes: number }`               |
+
+### Static Methods
+
+#### `SVGIsolateCache.parseSize(size)`
+
+Parses a size representation (either a number of bytes or a formatted string with units) and returns the corresponding integer in bytes.
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `size` | `number \| string` | A numeric byte value, or a string with units (e.g. `'500kb'`, `'10mb'`, `'1.5g'`, `'Infinity'`) |
+
+Returns `number`. Returns `Infinity` if invalid or if the value is `'Infinity'`.
+
+Supported units (case-insensitive):
+- `b`: Bytes (e.g. `'1024b'`)
+- `kb` or `k`: Kilobytes (e.g. `'500kb'`, `'250k'`) - multiplied by 1,024
+- `mb` or `m`: Megabytes (e.g. `'10mb'`, `'16m'`) - multiplied by $1,024^2$
+- `gb` or `g`: Gigabytes (e.g. `'1gb'`, `'2g'`) - multiplied by $1,024^3$
+
+```js
+import SVGIsolateCache from "./src/SVGIsolateCache.js";
+
+SVGIsolateCache.parseSize(5000);        // 5000
+SVGIsolateCache.parseSize('500kb');     // 512000
+SVGIsolateCache.parseSize('16mb');      // 16777216
+
+SVGIsolateCache.parseSize('Infinity');  // Infinity
+SVGIsolateCache.parseSize(NaN);//Infinity
+SVGIsolateCache.parseSize(null);//Infinity
+SVGIsolateCache.parseSize('abc');//Infinity
+```
 
 ### Methods
 
 #### `fetchSVG(src, opt?)`
 
-Fetches and caches an SVG string. If a request for the same URL is already in flight, returns the same Promise — no duplicate requests.
+Fetches and caches an SVG record. If a request for the same URL is already in flight, returns the same Promise — no duplicate requests.
 
 | Parameter | Type     | Description                                |
 | --------- | -------- | ------------------------------------------ |
 | `src`     | `string` | URL of the SVG file                        |
 | `opt`     | `object` | Options forwarded to `SVGIsolate.fetchSVG` |
 
-Returns `Promise<string | null>`.
+Returns `Promise<{ raw: string, size: number } | null>`.
 
 ```js
 // preload before any component renders
-await SVGIsolate.CACHE.fetchSVG("/assets/icon.svg");
+const result = await SVGIsolate.CACHE.fetchSVG("/assets/icon.svg");
+console.log(result.raw); // SVG string content
+console.log(result.size); // Size of the SVG file in bytes
 ```
 
 #### `has(src)`
@@ -572,19 +610,22 @@ Returns `boolean`. `true` if the URL is already cached.
 
 #### `get(src)`
 
-Returns `string | undefined`. The cached SVG string for the given URL.
+Returns `{ raw: string, size: number } | undefined`. The cached SVG record for the given URL.
 
 #### `set(src, value)`
 
-Manually adds an entry. Evicts the oldest entry if `maxEntries` is reached (FIFO).
+Manually adds an entry. The `value` parameter must be an object with the structure `{ raw: string, size: number }`.
+
+- Evicts the oldest entries (FIFO) if `maxEntries` is reached or if the new cumulative size exceeds `maxSize`.
+- If the individual item's size exceeds `maxSize`, it logs a warning and is skipped (not cached).
 
 #### `delete(src)`
 
-Removes a specific entry. Returns `boolean`.
+Removes a specific entry and subtracts its size from the cumulative cache size. Returns `boolean`.
 
 #### `clear()`
 
-Removes all entries.
+Removes all entries and resets the cumulative size metrics.
 
 <br>
 
@@ -653,3 +694,82 @@ Now every `<my-icon>` resolves `src` against the CDN without needing a `base` at
 ```
 
 Each subclass gets its own independent cache instance — two subclasses pointing to the same URL will not share cached results.
+
+---
+
+### Overriding Internal Methods (`_` Prefix)
+
+`SVGIsolate` delegates major operations to internal methods prefixed with `_`. Since these methods are not private JavaScript fields, they are fully accessible to subclasses. Subclasses can override them to hook into the lifecycle, customize fetching and rendering, or add custom post-processing:
+
+| Method                 | Signature                     | Description                                                                                                                                                                                                                                                                                                                             |
+| :--------------------- | :---------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `_loadSource()`        | `()`                          | Main entry point for resolving source. Determines if `srcset`, `src`, or Light DOM fallback is used. Overriding allows you to implement completely custom source-routing or custom default content behavior.                                                                                                                            |
+| `_loadByStrategy(ref)` | `(ref: { src: string })`      | Branches execution to loading strategies based on the `loading` attribute. `ref` is a shared reference containing the raw source string. Override this to implement or intercept loading strategies.                                                                                                                                    |
+| `_loadSVG(src)`        | `(src: string)`               | Asynchronously fetches, sanitizes, and renders the SVG. Handles fetch index generation to prevent race conditions. Override this to customize custom event payloads, handle loading state classes, or implement detailed error catch blocks.                                                                                            |
+| `_renderSVG(svg)`      | `(svg: string \| SVGElement)` | Parses and attaches the SVG node into the shadow DOM. Applies forwarding attributes (`viewBox`, `preserveAspectRatio`, `expose-svg`). **Highly useful to override** if you want to perform post-processing on the SVG DOM node (like adding event listeners or applying custom CSS classes) before it is inserted into the shadow root. |
+| `_updateSVG(name)`     | `(name: string)`              | Dynamically updates attributes (`viewBox`, `preserveAspectRatio`) on the already rendered SVG when element attributes are changed.                                                                                                                                                                                                      |
+| `_watchSrcset()`       | `()`                          | Initializes the `ResizeObserver` and debounced handler (`#responsiveDebounce`) to swap srcset candidates when the component width changes.                                                                                                                                                                                              |
+| `_eagerLoad(src)`      | `(src: string)`               | Eagerly calls `_loadSVG`.                                                                                                                                                                                                                                                                                                               |
+| `_deferLoad(src)`      | `(src: string)`               | Defers loading until `DOMContentLoaded` fires.                                                                                                                                                                                                                                                                                          |
+| `_idleLoad(src)`       | `(src: string)`               | Schedules loading via `requestIdleCallback` (with fallback to defer).                                                                                                                                                                                                                                                                   |
+| `_lazyLoad(ref)`       | `(ref: { src: string })`      | Uses `IntersectionObserver` to trigger load when the element enters the viewport.                                                                                                                                                                                                                                                       |
+
+#### Example: Post-processing SVG DOM Nodes
+
+By overriding `_renderSVG`, you can modify the SVG DOM tree after it has been parsed but before it is attached to the shadow root:
+
+```js
+class InteractiveIcon extends SVGIsolate {
+	_renderSVG(svg) {
+		// Let the parent parse and set basic attributes
+		super._renderSVG(svg);
+
+		// Now locate the inserted SVG inside the shadow DOM to perform modifications
+		const element = this.shadowRoot.querySelector("svg");
+		if (element) {
+			// Add a class or inject specific attributes
+			element.classList.add("interactive-icon-inner");
+			element.setAttribute("role", "img");
+
+			// E.g. Add event listener to all internal paths
+			element.querySelectorAll("path").forEach((path) => {
+				path.addEventListener("click", (e) => this._onPathClick(e));
+			});
+		}
+	}
+
+	_onPathClick(e) {
+		this.dispatchEvent(
+			new CustomEvent("path-click", { detail: { target: e.target } }),
+		);
+	}
+}
+InteractiveIcon.define("interactive-icon");
+```
+
+---
+
+### Internal & Private Fields (`#` Prefix)
+
+`SVGIsolate` uses native JavaScript private fields (prefixed with `#`) to manage internal state, debounces, and observers.
+
+> [!NOTE]
+> **Why Document Private Fields?**
+> Native JS private fields are strictly scoped to the class that declares them and **cannot be accessed or overridden by subclasses**.
+> They are documented here so that:
+>
+> 1. **Subclass Developers** understand the internal lifecycle, reactive flows, and asynchronous operations.
+> 2. **Naming Collisions** are avoided. Since private fields are scoped to the class, you can declare identical `#` fields in your subclasses without syntax errors or runtime conflicts, but understanding parent internals prevents conceptual overlap.
+> 3. **Debugging** is simplified when inspecting instances in browser developer tools.
+
+Here is the catalog of private fields used internally:
+
+| Field Name            | Declared In      | Type                    | Description                                                                                                                                                     |
+| :-------------------- | :--------------- | :---------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `#connected`          | `SVGIsolate`     | `boolean`               | Tracks if the component is mounted in the DOM. Used to ignore attribute changes before connection.                                                              |
+| `#loadSourceDebounce` | `SVGIsolate`     | `Debounce`              | Schedules `_loadSource()` asynchronously (microtask queue) to prevent synchronous race conditions when attributes change repeatedly in a single execution turn. |
+| `#currentFetchIndex`  | `SVGIsolate`     | `number \| null`        | Tracks the active fetch request index. Used to safely discard older out-of-order network responses.                                                             |
+| `#manualRender`       | `SVGIsolate`     | `boolean`               | Temporarily set to `true` during manual `renderSVG()` to suppress reactivity and avoid infinite loops when clearing attributes.                                 |
+| `#currentSource`      | `SVGIsolate`     | `object \| null`        | Stores the active source information (`{ raw, resolved }`). Exposed read-only via `currentSource`.                                                              |
+| `#responsiveDebounce` | `SVGIsolate`     | `Debounce`              | Debounces the `ResizeObserver` resize events using the `RESIZE_DEBOUNCE` interval during responsive `srcset` loading.                                           |
+| `#observers`          | `SVGIsolateBase` | `Map<string, Observer>` | Map holding active observer references (like `'lazy'` for `IntersectionObserver` or `'resize'` for `ResizeObserver`). Exposed read-only via `observers`.        |

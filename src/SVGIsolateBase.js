@@ -15,6 +15,7 @@ export class SVGIsolateBase extends HTMLElement {
 
     static CACHE_ENABLED = true;
     static CACHE_MAX_ENTRIES = 100;
+    static CACHE_MAX_SIZE = Infinity;
 
     static RESIZE_DEBOUNCE = 100;
 
@@ -57,7 +58,10 @@ export class SVGIsolateBase extends HTMLElement {
 
             //Initialize cache
             if (this.CACHE_ENABLED) {
-                this.CACHE = new SVGIsolateCache(this, this.CACHE_MAX_ENTRIES);
+                this.CACHE = new SVGIsolateCache(this, {
+                    maxEntries: this.CACHE_MAX_ENTRIES,
+                    maxSize: this.CACHE_MAX_SIZE
+                });
             }
 
             //Append styles
@@ -81,7 +85,6 @@ export class SVGIsolateBase extends HTMLElement {
             const response = await fetch(src);
 
             const contentLength = Number(response.headers.get('Content-Length'));
-            const size = Number.isNaN(contentLength) ? 0 : contentLength;
 
             if (response.ok) {
 
@@ -91,6 +94,8 @@ export class SVGIsolateBase extends HTMLElement {
 
                     raw = this.sanitize(raw);
                 }
+
+                const size = Number.isNaN(contentLength) ? 0 : contentLength;
 
                 return { raw, size };
             }
