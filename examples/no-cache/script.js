@@ -1,5 +1,4 @@
 import SVGIsolate from '/src/SVGIsolate.js';
-//import SVGIsolate from '/dist/SVGIsolate.js';
 
 
 class SVGIsolateDebug extends SVGIsolate {
@@ -29,8 +28,6 @@ class SVGIsolateDebug extends SVGIsolate {
 
 SVGIsolateDebug.define(null, {
     links: [
-        'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2/dist/SVGIsolate.min.css'
+        '/src/SVGIsolate.css'
     ]
 });
-
-window.SVGIsolate = SVGIsolateDebug;

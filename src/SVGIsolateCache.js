@@ -68,16 +68,17 @@ class SVGIsolateCache {
     }
     /** @returns {Map} The internal cache Map. */
     get values() {
-        return this.#values;
+        return new Map(this.#values);
     }
     /** @returns {Set} The internal recency Set. */
     get recency() {
-        return this.#recency;
+        return new Set(this.#recency);
     }
     /** @returns {Map} The internal pending Map. */
     get pending() {
-        return this.#pending;
+        return new Map(this.#pending);
     }
+    /** @returns {SVGIsolate} The owner component. */
     get owner() {
         return this.#owner;
     }

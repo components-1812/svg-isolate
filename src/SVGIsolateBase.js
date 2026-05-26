@@ -30,7 +30,7 @@ export class SVGIsolateBase extends HTMLElement {
         base: '/'
     }
 
-    static sanitize = null;
+    static sanitizer = null;
 
     #observers = new Map();
 
@@ -90,9 +90,9 @@ export class SVGIsolateBase extends HTMLElement {
 
                 let raw = await response.text();
 
-                if (sanitize && typeof this.sanitize === 'function') {
+                if (sanitize && typeof this.sanitizer === 'function') {
 
-                    raw = this.sanitize(raw);
+                    raw = this.sanitizer(raw);
                 }
 
                 const size = Number.isNaN(contentLength) ? 0 : contentLength;

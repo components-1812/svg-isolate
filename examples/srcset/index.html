@@ -1,38 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>SVG Isolate: srcset and Resizing</title>
 
-        <link rel="stylesheet" href="style.css">
-    </head>
-    <body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Isolate: srcset and Resizing</title>
 
-        <div class="container">
+    <link rel="stylesheet" href="style.css">
+</head>
 
-            <svg-isolate width="200px" style="--width: '200px'" 
-                srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w"  
-                loading="lazy"
-            ></svg-isolate>
+<body>
 
-            <svg-isolate width="400px"  style="--width: '400px'"
-                srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w"  
-                loading="lazy"
-            ></svg-isolate>
+    <h1>How it behaves in different container widths</h1>
 
-            <svg-isolate width="800px"  style="--width: '800px'"
-                srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w"  
-                loading="lazy"
-            ></svg-isolate>
 
-            <svg-isolate width="1200px" style="--width: '1200px'"
-                srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w"  
-                loading="lazy"
-            ></svg-isolate>
+    <div class="container">
 
+
+        <div class="info">
+            <p>Multiple instances with the exact same srcset showing asset switching based on the component's own
+                rendered width</p>
         </div>
 
-        <script src="srcript.js" type="module"></script>
-    </body>
+        <div class="content">
+
+            <svg-isolate width="200px" style="--width: '200px'"
+                srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w"
+                loading="lazy"></svg-isolate>
+
+            <svg-isolate width="400px" style="--width: '400px'; grid-column: span 2"
+                srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w"
+                loading="lazy"></svg-isolate>
+
+            <svg-isolate width="800px" style="--width: '800px'; grid-column: span 4"
+                srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w"
+                loading="lazy"></svg-isolate>
+
+            <svg-isolate width="1200px" style="--width: '1200px'; grid-column: span 6"
+                srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w"
+                loading="lazy"></svg-isolate>
+        </div>
+
+    </div>
+
+    <script src="srcript.js" type="module"></script>
+</body>
+
 </html>

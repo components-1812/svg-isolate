@@ -1,33 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>SVG Isolate: srcset and Resizing</title>
 
-        <link rel="stylesheet" href="style.css">
-    </head>
-    <body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Isolate: srcset and Resizing</title>
 
-        <div class="resized">
+    <link rel="stylesheet" href="style.css">
+</head>
 
-            <div>
-                <svg-isolate id="1"
-                    srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w" 
-                    responsive
-                ></svg-isolate>
-            </div>
+<body>
 
-            <div class="scrolled">
-                <p></p>
-                <svg-isolate id="2"
-                    srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w" 
-                    responsive
-                    loading="lazy"
-                ></svg-isolate>
-            </div>
-            
+    <div class="resized">
+
+        <h2>Resize the container to observe dynamic <span>srcset</span> selection</h2>
+
+        <div class="content main"></div>
+
+        <h2>Scroll down to trigger dynamic lazy loading</h2>
+
+        <div class="content scrolled">
+            <p></p>
         </div>
-        <script src="srcript.js" type="module"></script>
-    </body>
+
+    </div>
+
+    <div class="info">
+        <div id="fetch-log">
+            <h3>Fetching LOG:</h3>
+            <div class="content">
+                <div class="logs"></div>
+            </div>
+        </div>
+        <div class="sources">
+            <h3>Sources:</h3>
+            <ul></ul>
+        </div>
+    </div>
+
+    <script src="srcript.js" type="module"></script>
+</body>
+
 </html>

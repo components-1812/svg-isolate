@@ -2,44 +2,86 @@
 	margin: 0;
 	padding: 0;
 }
+
 :root {
 	color-scheme: dark;
+	font-family: 'Consolas', monospace;
 }
+
 body {
-	padding: 20px 50px;
+	max-width: 1500px;
+	margin-inline: auto;
+	padding: 30px 50px;
 	display: flex;
 	gap: 20px;
 	flex-direction: column;
-	align-items: center;
+
+	h1 {
+		text-align: center;
+		font-size: clamp(2em, 5vw, 3.5em);
+	}
 }
+
 svg-isolate {
+	height: 200px;
 	outline: 1px dashed gray;
+}
+
+svg-isolate::after {
+	content: var(--width);
+	display: block;
+	font-size: 12pt;
+
+	color: gray;
+	position: absolute;
+	bottom: 10px;
+	right: 10px;
 }
 
 .container {
 	padding: 10px;
 	width: 100%;
-	display: flex;
-	justify-content: center;
-	gap: 20px;
-	flex-wrap: wrap;
-	overflow-x: hidden;
 
-	svg-isolate {
-		height: 300px;
-		flex-shrink: 0;
+	.info {
+		max-width: 1200px;
+		margin-inline: auto;
+
+		text-align: center;
+		padding: 20px 10px;
+
+		p {
+			font-size: 14pt;
+			margin-bottom: 20px;
+		}
+
+		.srcset {
+			background: #0d1117;
+			border: 1px solid #30363d;
+			border-radius: 12px;
+
+			padding: 20px 10px;
+
+			.attr-name {
+				color: #7ee787;
+			}
+
+			.link {
+				color: #58a6ff;
+				text-decoration: none;
+			}
+
+			.width {
+				color: #b458ff;
+			}
+		}
 	}
 
-	svg-isolate::after {
-		content: var(--width);
-		display: block;
-		font-size: 16px;
-		font-family: monospace;
-		color: rgb(255, 255, 255);
-		position: absolute;
-		bottom: 10px;
-		right: 10px;
+	.content {
+		margin-block: 50px;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 20px;
 	}
 }
-
-

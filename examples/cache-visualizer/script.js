@@ -13,17 +13,17 @@ const Elements = [
 
     class extends SVGIsolate {
         static CACHE_MAX_ENTRIES = 10;
-        static CACHE_MAX_SIZE = '1kb';
+        static CACHE_MAX_SIZE = '1KB';
     },
 
     class extends SVGIsolate {
         static CACHE_MAX_ENTRIES = Infinity;
-        static CACHE_MAX_SIZE = '10kb';
+        static CACHE_MAX_SIZE = '10KB';
     },
 
     class extends SVGIsolate {
         static CACHE_MAX_ENTRIES = 50;
-        static CACHE_MAX_SIZE = '1mb';
+        static CACHE_MAX_SIZE = '1MB';
     },
 
 ];

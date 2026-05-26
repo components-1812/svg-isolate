@@ -3,38 +3,37 @@ import SVGIsolate from "/src/SVGIsolate.js";
 import DOMPurify from "https://cdn.jsdelivr.net/npm/dompurify@3.4.3/dist/purify.es.mjs";
 
 
-document.querySelectorAll('svg-isolate')
-.forEach(element => {
+class SVGIsolateDebug extends SVGIsolate {
 
-    element.addEventListener('ready', (e) => {
+    static sanitizer = function (raw) {
 
-        const svg = e.target.shadowRoot.querySelector('svg');
+        return DOMPurify.sanitize(raw, {
+            USE_PROFILES: { svg: true },
+            FORBID_TAGS: ['style', 'script'],
+            FORBID_ATTR: ['style'],
+        });
+    }
+
+    _renderSVG(svg) {
 
         const pre = document.createElement('pre');
-        pre.textContent = svg.outerHTML;
+        pre.textContent = svg;
 
-        e.target.closest('.row').querySelector('code').append(pre);
-    });
-})
+        this.closest('.row').querySelector('code').append(pre);
 
-SVGIsolate.sanitize = function(raw){
-
-    return DOMPurify.sanitize(raw, {
-        USE_PROFILES: { svg: true },
-        FORBID_TAGS: ['style', 'script'],
-        FORBID_ATTR: ['style'],
-    });
+        return super._renderSVG(svg);
+    }
 }
 
-SVGIsolate.define(null,  {
+SVGIsolateDebug.define(null, {
     links: [
-        '/dist/SVGIsolate.css',
+        '/src/SVGIsolate.css',
     ]
 });
 
 document.querySelector('svg-isolate[sanitize]')
-.componentStyles.add({
-    raw: `
+    .componentStyles.add({
+        raw: `
         circle {
             fill: #cf0822;
         }
@@ -48,5 +47,5 @@ document.querySelector('svg-isolate[sanitize]')
             font-family: serif;
         }
     `
-})
-.apply();
+    })
+    .apply();

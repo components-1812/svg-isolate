@@ -62,7 +62,7 @@ graph LR
         Fetch["fetchSVG()"]
         Cache[("Memory Cache")]
         San{Sanitize?}
-        SanOp["SVGIsolate.sanitize()"]
+        SanOp["SVGIsolate.sanitizer()"]
     end
 
     subgraph Output [Rendering]
@@ -132,7 +132,7 @@ Notes:
 
 - src received by `_loadSVG` is always the raw value from the src | srcset attribute — `resolveSource(src, base)` is called here to produce the final URL passed to `fetchSVG`
 
-- `SVGIsolate.sanitize(rawSvg)` is called in `_loadSVG` after fetch and before `_renderSVG`
+- `SVGIsolate.sanitizer(rawSvg)` is called in `_loadSVG` after fetch and before `_renderSVG`
 
 - `#currentSource` is set in `_loadSVG` after a successful render — always reflects the live displayed SVG
 
@@ -155,12 +155,12 @@ Notes:
 | `CACHE_MAX_SIZE`    | `number \| string`             | `Infinity`      | Maximum cumulative size of entries the cache holds (supports string units e.g., `'10mb'`, `'500kb'`). Parsed before `define()` |
 | `RESIZE_DEBOUNCE`   | `number`                       | `100`           | Debounce time in milliseconds for the resize observer when `responsive` is `true`    |
 | `CACHE`             | `SVGIsolateCache`              | —               | Cache instance. Created automatically by `define()` if `CACHE_ENABLED` is `true`     |
-| `sanitize`          | `Function \| null`             | `null`          | Static sanitizer function. Receives a raw SVG string and returns a sanitized string  |
+| `sanitizer`         | `Function \| null`             | `null`          | Static sanitizer function. Receives a raw SVG string and returns a sanitized string  |
 | `defaults`          | `object`                       | —               | Default values for all instance properties. See [Defaults](#defaults)                |
 | `LOADING`           | `object`                       | —               | Enum of valid loading strategy values. See [Loading Strategies](#loading-strategies) |
 | `styleSheets`       | `ComponentStyleSheets \| null` | `null`          | Shared stylesheet collection registered at `define()` time. Populated by `define()`  |
 
-### `sanitize`
+### `sanitizer`
 
 Static sanitizer function applied to the raw SVG string before rendering, when the `sanitize` attribute is present on the instance. Must be set before any component renders.
 
@@ -173,12 +173,18 @@ Returns `string` — the sanitized SVG string.
 ```js
 import DOMPurify from "dompurify";
 
-SVGIsolate.sanitize = (raw) => {
+SVGIsolate.sanitizer = (raw) => {
 	return DOMPurify.sanitize(raw, { USE_PROFILES: { svg: true } });
 };
 ```
 
 The sanitizer runs after the fetch and before `renderSVG`, so the cache always stores the raw unsanitized string.
+
+> [!WARNING]
+> **XSS Risk on Untrusted SVGs:**
+> If you are loading SVGs from untrusted user uploads or external user-generated sources, **always enable the `sanitize` attribute** and configure a secure sanitizer like `DOMPurify`.
+>
+> While static `<script>` tags are blocked by `DOMParser`, **inline event attributes (e.g., `onload`, `onmouseover`, `onclick`) will still execute** inside the Shadow DOM when triggered by interaction or page cycles, opening viable XSS vectors (including dynamic code execution via `import()`).
 
 <br>
 
@@ -244,7 +250,7 @@ Fetches an SVG file from the given URL. Returns `null` on network error or non-o
 | Parameter      | Type      | Default | Description                                                                          |
 | -------------- | --------- | ------- | ------------------------------------------------------------------------------------ |
 | `src`          | `string`  | —       | URL of the SVG file                                                                  |
-| `opt.sanitize` | `boolean` | `false` | Whether to sanitize the SVG after fetching. Requires `SVGIsolate.sanitize` to be set |
+| `opt.sanitize` | `boolean` | `false` | Whether to sanitize the SVG after fetching. Requires `SVGIsolate.sanitizer` to be set |
 
 Returns `Promise<string | null>`.
 
@@ -445,7 +451,7 @@ Changes to these attributes are observed and trigger the component to update aut
 | `loading`        | `string`            | `eager` | Loading strategy. One of `eager`, `defer`, `idle`, `lazy`                                        |
 | `responsive`     | `boolean`           | `false` | Enables automatic candidate swapping on resize                                                   |
 | `no-cache`       | `boolean`           | `false` | Disables in-memory caching for this instance                                                     |
-| `sanitize`       | `boolean`           | `false` | Enables sanitization before rendering. Requires `SVGIsolate.sanitize` to be set                  |
+| `sanitize`       | `boolean`           | `false` | Enables sanitization before rendering. Requires `SVGIsolate.sanitizer` to be set                  |
 | `lazy-margin`    | `string`            | `0px`   | Extends the viewport boundary before triggering a lazy load                                      |
 | `lazy-threshold` | `number`            | `0`     | Visibility ratio required before triggering a lazy load (0 to 1)                                 |
 | `expose-svg`     | `string \| boolean` | `null`  | Exposes the inner `<svg>` via `::part()`. Omitting a value uses `'svg'` as the default part name |
@@ -572,6 +578,9 @@ Supported units (case-insensitive):
 - `mb` or `m`: Megabytes (e.g. `'10mb'`, `'16m'`) - multiplied by $1,024^2$
 - `gb` or `g`: Gigabytes (e.g. `'1gb'`, `'2g'`) - multiplied by $1,024^3$
 
+> [!NOTE]
+> All sizes are parsed case-insensitively (e.g., `'1mb'` is identical to `'1MB'`). The units represent sizes strictly in **bytes** rather than bits (e.g., `1MB` or `1mb` represents 1 Megabyte, i.e., $1,024^2$ bytes, not a Megabit).
+
 ```js
 import SVGIsolateCache from "./src/SVGIsolateCache.js";
 
@@ -662,7 +671,7 @@ MyIcon.define("my-icon");
 ```js
 class MyIcon extends SVGIsolate {}
 
-MyIcon.sanitize = (raw) => {
+MyIcon.sanitizer = (raw) => {
 	return DOMPurify.sanitize(raw, { USE_PROFILES: { svg: true } });
 };
 

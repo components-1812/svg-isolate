@@ -62,7 +62,7 @@ body {
 .column {
     width: 400px;
     height: 600px;
-    outline: 1px dashed gray;
+    outline: 1px dashed rgb(199, 186, 2);
     padding: 10px;
 
     display: flex;

@@ -33,7 +33,7 @@ import SVGIsolateBase from "./SVGIsolateBase.js";
  *   - src received by `_loadSVG` is always the raw value from the src | srcset attribute — 
  *     resolveSource(src, base) is called here to produce the final URL passed to fetchSVG
  * 
- *   - SVGIsolate.sanitize(rawSvg) is called in `_loadSVG` after fetch and before `_renderSVG`
+ *   - SVGIsolate.sanitizer(rawSvg) is called in `_loadSVG` after fetch and before `_renderSVG`
  * 
  *   - #currentSource is set in `_loadSVG` after a successful render — always reflects the live displayed SVG
  * 
@@ -203,8 +203,8 @@ export class SVGIsolate extends SVGIsolateBase {
             if (!rawSvg) return;
 
             // Sanitize after fetch so the cache always stores the raw SVG
-            if (this.sanitize && typeof this.constructor.sanitize === 'function') {
-                rawSvg = this.constructor.sanitize(rawSvg);
+            if (this.sanitize && typeof this.constructor.sanitizer === 'function') {
+                rawSvg = this.constructor.sanitizer(rawSvg);
             }
 
             // Check if this is still the most recent fetch request

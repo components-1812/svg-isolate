@@ -449,6 +449,9 @@ SVGIsolate.CACHE_MAX_SIZE = '10mb'; // Also accepts '500kb', '1.5g', or raw byte
 
 Both must be set **before** calling `SVGIsolate.define()`.
 
+> [!NOTE]
+> The size values are parsed **case-insensitively** (e.g., `'1mb'` is identical to `'1MB'`) and represent sizes in **bytes** rather than bits (e.g., `'1MB'` or `'1mb'` is parsed as exactly $1,024^2$ bytes, representing 1 Megabyte, not a Megabit).
+
 ### Shared cache
 
 The cache is shared across all instances of the same component class. Two `<svg-isolate>` elements pointing to the same `src` will only trigger one fetch — the second reuses the cached result.
@@ -611,23 +614,38 @@ SVGIsolate.defaults.responsive = true;
 
 ## Sanitize
 
-`<svg-isolate>` renders SVG files inside a shadow DOM using `DOMParser` and `appendChild`. This means:
+> [!WARNING]
+> **XSS Risk on Untrusted SVGs:**
+> If you are loading SVGs from untrusted user uploads or external user-generated sources, **always enable the `sanitize` attribute** and configure a secure sanitizer like `DOMPurify`.
+>
+> While static `<script>` tags are blocked by `DOMParser`, **inline event attributes (e.g., `onload`, `onmouseover`, `onclick`) will still execute** inside the Shadow DOM when triggered by interaction or page cycles, opening viable XSS vectors (including dynamic code execution via `import()`).
 
-- `<script>` tags are **never executed** — the browser does not evaluate scripts inserted via `DOMParser` + `append`.
-- CSS inside `<style>` tags is **encapsulated** by the shadow DOM — selectors like `body`, `p`, or `div` cannot escape and affect the rest of the page.
+`<svg-isolate>` renders SVG files inside a shadow DOM using `DOMParser` and `appendChild`. When rendering raw SVG, the browser enforces the following security and encapsulation behaviors:
 
-Sanitization is therefore not required for security in most cases. Its purpose is to **clean up the SVG DOM** — removing nodes like `<script>`, `<style>`, or inline `style` attributes that you don't want present in the shadow root, even if they are inert.
+### 1. Static Scripts (`<script>`) — Blocked 🔒
+- `<script>` tags are **never executed** — the browser does not evaluate scripts inserted via `DOMParser` + `appendChild`.
+
+### 2. Inline Event Handlers (`on*` attributes) — Vulnerable ⚠️
+- Inline HTML event attributes (such as `onload`, `onmouseover`, `onclick`) **will execute** inside the Shadow DOM when the respective user interaction or lifecycle event triggers them.
+- This represents a viable XSS vector, as malicious actors can inject payloads that execute arbitrary JavaScript or even dynamically import external scripts:
+  ```html
+  <rect onmouseover="import('./hack.js').then(mod => mod.hacking())" ... />
+  ```
+- To safely purge these attributes, you must use the `sanitize` feature.
+
+### 3. CSS Encapsulation (`<style>`) — Secure 🔒
+- CSS inside `<style>` tags is **fully encapsulated** by the shadow DOM — selectors like `body`, `p`, or `div` cannot escape and affect the rest of the parent page.
 
 ---
 
-### `SVGIsolate.sanitize` — static function
+### `SVGIsolate.sanitizer` — static function
 
 Set a static sanitizer function before any component renders. It receives the raw SVG string and returns the cleaned string. If not set, sanitization is skipped even when the `sanitize` attribute is present.
 
 ```js
 import DOMPurify from "https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.es.mjs";
 
-SVGIsolate.sanitize = (raw) => {
+SVGIsolate.sanitizer = (raw) => {
 	return DOMPurify.sanitize(raw, {
 		USE_PROFILES: { svg: true },
 		FORBID_TAGS: ["style", "script"],
@@ -642,7 +660,7 @@ The sanitizer runs after the fetch and before `renderSVG`, so the cache always s
 
 ### `sanitize` — instance attribute and property
 
-Controls whether the sanitizer is applied to a specific instance. Has no effect if `SVGIsolate.sanitize` is not set.
+Controls whether the sanitizer is applied to a specific instance. Has no effect if `SVGIsolate.sanitizer` is not set.
 
 ```html
 <!-- sanitize this instance -->
