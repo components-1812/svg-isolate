@@ -1,7 +1,7 @@
 
 
 function hacking() {
-    console.log('☠️☠️ You are hacked by SVG ☠️☠️');
+    console.log('%c☠️☠️ You are hacked by SVG ☠️☠️', "color: red; font-size: 32px; font-weight: bold;");
     console.log('We are stealing your data :v');
     console.log('We are stealing your cookies :v');
     console.log('We are stealing your credit card numbers :v');
