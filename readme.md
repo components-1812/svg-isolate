@@ -1,3 +1,9 @@
+![NPM Version](https://img.shields.io/npm/v/@components-1812/svg-isolate)
+[![Custom Elements](https://img.shields.io/badge/custom--elements-standard-orange.svg?style=flat-flat)](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements)
+[![gzipped size](https://img.shields.io/bundlephobia/minzip/@components-1812/svg-isolate)](https://bundlephobia.com/package/@components-1812/svg-isolate)
+[![GitHub stars](https://img.shields.io/github/stars/components-1812/svg-isolate?style=social)](https://github.com/components-1812/svg-isolate/stargazers)
+
+
 # SVG Isolate Custom Element
 
 ![Id collision example](./assets/id-collision.webp)
@@ -5,7 +11,7 @@
 ## Features
 
 - 🔒 **Shadow DOM isolation** — SVG styles and IDs are scoped to the component. No conflicts with the rest of the page.
-- 📦 **Smart caching** — in-memory cache with deduplication. Same URL fetched once, shared across all instances.
+- 📦 **Smart caching** — LRU in-memory cache with deduplication. Same URL fetched once, shared across all instances. Configurable by item count and byte size limit.
 - 🖼️ **srcset support** — serve different SVG files based on the component's rendered width, just like native `<img srcset>`.
 - ⚡ **Loading strategies** — `eager`, `defer`, `idle`, and `lazy` (via `IntersectionObserver`).
 - 🔗 **Base URL** — resolve src against a configurable base path or CDN URL. Set per-element or globally via defaults.
@@ -55,7 +61,7 @@ Loads the bundle and registers `<svg-isolate>` automatically with default styles
 
 ```html
 <script type="module">
-	import "https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate/dist/bundle.min.js";
+	import "https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate/dist/index.bundle.min.js";
 </script>
 ```
 
@@ -79,7 +85,7 @@ Use this if you need a custom tag name or want to provide your own styles.
 
 | File                 | jsdelivr                                                                                  | unpkg                                                                          |
 | -------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Bundle (recommended) | [link](https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate/dist/bundle.min.js)      | [link](https://unpkg.com/@components-1812/svg-isolate/dist/bundle.min.js)      |
+| Bundle (recommended) | [link](https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate/dist/index.bundle.min.js)      | [link](https://unpkg.com/@components-1812/svg-isolate/dist/index.bundle.min.js)      |
 | SVGIsolate.js        | [link](https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate/dist/SVGIsolate.min.js)  | [link](https://unpkg.com/@components-1812/svg-isolate/dist/SVGIsolate.min.js)  |
 | SVGIsolate.css       | [link](https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate/dist/SVGIsolate.min.css) | [link](https://unpkg.com/@components-1812/svg-isolate/dist/SVGIsolate.min.css) |
 
@@ -364,7 +370,7 @@ class BootstrapIcon extends SVGIsolate {
 
 BootstrapIcon.define("bootstrap-icon", {
 	links: [
-		"https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/SVGIsolate.min.css",
+		"https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2/dist/SVGIsolate.min.css",
 	],
 });
 ```
@@ -429,15 +435,19 @@ SVGIsolate.CACHE_ENABLED = false;
 
 Must be set **before** calling `SVGIsolate.define()`.
 
-### Max entries
+### Limits & Eviction
 
-By default the cache holds up to `100` entries. When the limit is reached, the oldest entry is evicted before adding the new one (FIFO):
+By default, the cache holds up to `100` entries with no maximum cumulative byte size limit (`Infinity`). When limits are reached, the least recently used entry is evicted before adding the new one (LRU):
 
 ```js
+// Evict after 50 items
 SVGIsolate.CACHE_MAX_ENTRIES = 50;
+
+// Evict after 10 Megabytes of accumulated SVG strings
+SVGIsolate.CACHE_MAX_SIZE = '10mb'; // Also accepts '500kb', '1.5g', or raw bytes like 5000000
 ```
 
-Also must be set before calling `SVGIsolate.define()`.
+Both must be set **before** calling `SVGIsolate.define()`.
 
 ### Shared cache
 

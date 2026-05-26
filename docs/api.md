@@ -367,13 +367,13 @@ Malformed candidates are silently dropped — the rest of the candidates remain 
 
 #### `loadSVG(src, opt?)`
 
-Fetches and renders an SVG from the given URL. Respects the current `useCache` and `sanitize` settings unless overridden via `opt`.
+Fetches and renders an SVG from the given URL. Updates the instance properties/attributes if custom options are provided in `opt` (these changes persist for subsequent loads).
 
 | Parameter      | Type      | Default | Description                                              |
 | -------------- | --------- | ------- | -------------------------------------------------------- |
 | `src`          | `string`  | —       | URL of the SVG file to load (set as the `src` attribute) |
-| `opt.base`     | `string`  | —       | Override the `base` attribute for this load              |
-| `opt.useCache` | `boolean` | —       | Override the `useCache` setting for this load            |
+| `opt.base`     | `string`  | —       | Update and persist a new `base` attribute on the instance  |
+| `opt.useCache` | `boolean` | —       | Update and persist a new `useCache` setting on the instance|
 
 Returns `void`.
 
@@ -522,7 +522,7 @@ The component protects against two distinct types of race conditions:
 
     This is prevented by the `#loadSourceDebounce` debounce (initialized in `connectedCallback` and disposed in `disconnectedCallback`).
 
-    With a timeout of `0` ms, it schedules the loading logic to run asynchronously after the current synchronous block has fully completed execution,
+    Using a microtask (`queueMicrotask()`), it schedules the loading logic to run asynchronously after the current synchronous block has fully completed execution,
     ensuring only the final state is requested.
 
 - **Asynchronous (Time-spaced / Network-driven):**
@@ -547,6 +547,7 @@ The cache instance accessible via `SVGIsolate.CACHE`. Created automatically by `
 | Property     | Type                                                      | Description                                                                                          |
 | ------------ | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `values`     | `Map<string, { raw: string, size: number }>`              | All cached SVG records (including raw content and size in bytes) keyed by URL                        |
+| `recency`    | `Set<string>`                                             | LRU priority queue preserving the recency of used keys                                               |
 | `pending`    | `Map<string, Promise<{ raw: string, size: number }\|null>>`| In-flight requests keyed by URL                                                                      |
 | `owner`      | `typeof SVGIsolate`                                       | The component class that owns this cache instance                                                    |
 | `maxEntries` | `number`                                                  | Maximum number of entries before eviction                                                            |
@@ -616,7 +617,7 @@ Returns `{ raw: string, size: number } | undefined`. The cached SVG record for t
 
 Manually adds an entry. The `value` parameter must be an object with the structure `{ raw: string, size: number }`.
 
-- Evicts the oldest entries (FIFO) if `maxEntries` is reached or if the new cumulative size exceeds `maxSize`.
+- Evicts the least recently used entries (LRU) if `maxEntries` is reached or if the new cumulative size exceeds `maxSize`.
 - If the individual item's size exceeds `maxSize`, it logs a warning and is skipped (not cached).
 
 #### `delete(src)`
@@ -767,7 +768,7 @@ Here is the catalog of private fields used internally:
 | Field Name            | Declared In      | Type                    | Description                                                                                                                                                     |
 | :-------------------- | :--------------- | :---------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `#connected`          | `SVGIsolate`     | `boolean`               | Tracks if the component is mounted in the DOM. Used to ignore attribute changes before connection.                                                              |
-| `#loadSourceDebounce` | `SVGIsolate`     | `Debounce`              | Schedules `_loadSource()` asynchronously (microtask queue) to prevent synchronous race conditions when attributes change repeatedly in a single execution turn. |
+| `#loadSourceDebounce` | `SVGIsolate`     | `DebounceMicrotask`     | Schedules `_loadSource()` asynchronously (microtask queue) to prevent synchronous race conditions when attributes change repeatedly in a single execution turn. |
 | `#currentFetchIndex`  | `SVGIsolate`     | `number \| null`        | Tracks the active fetch request index. Used to safely discard older out-of-order network responses.                                                             |
 | `#manualRender`       | `SVGIsolate`     | `boolean`               | Temporarily set to `true` during manual `renderSVG()` to suppress reactivity and avoid infinite loops when clearing attributes.                                 |
 | `#currentSource`      | `SVGIsolate`     | `object \| null`        | Stores the active source information (`{ raw, resolved }`). Exposed read-only via `currentSource`.                                                              |

@@ -135,7 +135,7 @@ export class ComponentStyles extends ComponentStyleSheets {
 
             //If it's already loaded (rare in shadow DOM, but possible)
             if(link.sheet){
-                resolve({ link, href: url.href, status: 'loaded' });
+                resolve({ link, href: url, status: 'loaded' });
             }
             else {
                 link.addEventListener('load', () => resolve({ link, href: url, status: 'loaded' }));

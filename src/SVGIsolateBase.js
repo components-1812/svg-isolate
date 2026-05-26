@@ -156,10 +156,15 @@ export class SVGIsolateBase extends HTMLElement {
         };
 
         if (this.src) {
-            result.src = {
-                raw: this.src,
-                resolved: this.constructor.resolveSource(this.src, this.base).resolved
-            };
+            try {
+                result.src = {
+                    raw: this.src,
+                    resolved: this.constructor.resolveSource(this.src, this.base).resolved
+                };
+            }
+            catch (error) {
+                // If resolving src fails (e.g. malformed URL), leave result.src as null
+            }
         }
         if (this.srcset) {
 
@@ -382,8 +387,8 @@ export class SVGIsolateBase extends HTMLElement {
         this._setStringAttribute('width', value, {
             validate: (v) => {
 
-                if (!CSS.supports('width', value)) {
-                    console.warn(`Invalid width value: "${value}". It must be a valid CSS length.`);
+                if (!CSS.supports('width', v)) {
+                    console.warn(`Invalid width value: "${v}". It must be a valid CSS length.`);
                     return false;
                 }
 
@@ -400,8 +405,8 @@ export class SVGIsolateBase extends HTMLElement {
         this._setStringAttribute('height', value, {
             validate: (v) => {
 
-                if (!CSS.supports('height', value)) {
-                    console.warn(`Invalid height value: "${value}". It must be a valid CSS length.`);
+                if (!CSS.supports('height', v)) {
+                    console.warn(`Invalid height value: "${v}". It must be a valid CSS length.`);
                     return false;
                 }
 

@@ -31,10 +31,10 @@ svg.addEventListener('fetching', (e) => {
  * Prevented using debounce with timeout 0. 
  * JS waits for the current execution stack to clear after the loop finishes.
  */
-// for (const src of links) {
-//     svg.src = src;
-//     // svg.loadSVG(src);
-// }
+for (const src of links) {
+    svg.src = src;
+    // svg.loadSVG(src);
+}
 
 
 /**
@@ -46,7 +46,7 @@ svg.addEventListener('fetching', (e) => {
  * the older request's index value will no longer match the current active index, 
  * and its resolved SVG will be safely discarded rather than rendered.
  */
-const iterator = links.values();
+/* const iterator = links.values();
 
 const id = setInterval(() => {
 
@@ -60,4 +60,4 @@ const id = setInterval(() => {
     console.log('Interval set src to:', value);
     svg.src = value;
 
-}, 10);
+}, 10); */

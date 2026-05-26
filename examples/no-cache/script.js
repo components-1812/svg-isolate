@@ -12,7 +12,7 @@ class SVGIsolateDebug extends SVGIsolate {
 
         //Show fetches in the console and on the page to demonstrate caching effectiveness
         this.fetchCounter++;
-        
+
         console.log(`[DEBUG] ${this.fetchCounter} Fetching: ${src}`);
 
         const p = document.createElement('p');
@@ -29,7 +29,7 @@ class SVGIsolateDebug extends SVGIsolate {
 
 SVGIsolateDebug.define(null, {
     links: [
-        'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/SVGIsolate.min.css'
+        'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2/dist/SVGIsolate.min.css'
     ]
 });
 

@@ -170,11 +170,12 @@ function UpdateCacheInfo(tagName) {
 
     const frag = document.createDocumentFragment();
 
-    const entries = Array.from(SVGIsolate.CACHE.values.entries());
+    const entries = Array.from(SVGIsolate.CACHE.recency);
 
     for (let i = 0; i < entries.length; i++) {
 
-        const [key, value] = entries[i];
+        const key = entries[i];
+        const { size } = SVGIsolate.CACHE.values.get(key);
 
         const name = key.split('/').at(-1);
 
@@ -182,7 +183,7 @@ function UpdateCacheInfo(tagName) {
         li.innerHTML = /*html*/`
             <div class="item">
                 <a class="src" data-tag-name="${tagName}" data-src="${name}" href="${key}" target="_blank">${name}</a>
-                <span class="size" title="${value.size.toLocaleString()} Bytes">${formatBytes(value.size)}</span>
+                <span class="size" title="${size.toLocaleString()} Bytes">${formatBytes(size)}</span>
             </div>
         `;
 

@@ -1,4 +1,4 @@
-import { Debounce } from "./Debounce.js";
+import { Debounce, DebounceMicrotask } from "./Debounce.js";
 import { ComponentStyles } from "./StyleSystem.js";
 import SVGIsolateBase from "./SVGIsolateBase.js";
 
@@ -25,8 +25,8 @@ import SVGIsolateBase from "./SVGIsolateBase.js";
  * 
  * Notes:
  *   - #loadSourceDebounce init in connectedCallback() and dispose in disconnectedCallback()
- *     With timeout 0 #loadSourceDebounce prevent race conditions when src | srcset attributes 
- *     recive multiples updates in a single task.
+ *     Use DebounceMicrotask to prevent race conditions when src | srcset attributes 
+ *     recive multiples updates in a single task. internally calls `queueMicrotask()`
  *
  *   - clear() runs at the start of `_loadSource` on every call except the first (connectedCallback)
  * 
@@ -36,6 +36,9 @@ import SVGIsolateBase from "./SVGIsolateBase.js";
  *   - SVGIsolate.sanitize(rawSvg) is called in `_loadSVG` after fetch and before `_renderSVG`
  * 
  *   - #currentSource is set in `_loadSVG` after a successful render — always reflects the live displayed SVG
+ * 
+ *   - `_watchSrcset()` initiate ResizeObserver, get the **current width** and call `onResize(width)`
+ *     using `Debounce` (100ms) to prevent multiple updates
  */
 
 export class SVGIsolate extends SVGIsolateBase {
@@ -69,10 +72,10 @@ export class SVGIsolate extends SVGIsolateBase {
     connectedCallback() {
 
         // Usamos el debounce para agrupar la carga inicial con posibles cambios inmediatos
-        this.#loadSourceDebounce = new Debounce(() => {
+        this.#loadSourceDebounce = new DebounceMicrotask(() => {
 
             this._loadSource();
-        }, 0);
+        });
 
         this.#loadSourceDebounce.run();
 
@@ -161,7 +164,7 @@ export class SVGIsolate extends SVGIsolateBase {
             'loading', 'lazy-margin', 'lazy-threshold', 'base',
             'ready', 'fetching'
         ]
-        .forEach(attr => this.removeAttribute(attr));
+            .forEach(attr => this.removeAttribute(attr));
 
         this._renderSVG(svg);
 
@@ -206,7 +209,7 @@ export class SVGIsolate extends SVGIsolateBase {
 
             // Check if this is still the most recent fetch request
             if (this.#currentFetchIndex !== fetchIndex) return;
-             
+
             this.#currentSource = { raw: src, resolved };
 
             this._renderSVG(rawSvg);
@@ -220,7 +223,7 @@ export class SVGIsolate extends SVGIsolateBase {
         finally {
             // Ensure we only remove the fetching attribute if this was the latest request
             if (this.#currentFetchIndex === fetchIndex) {
-                
+
                 this.removeAttribute('fetching');
                 this.#currentFetchIndex = null;
             }
@@ -256,7 +259,7 @@ export class SVGIsolate extends SVGIsolateBase {
 
             default:
                 const svg = this.querySelector('svg');
-                if (svg) this.shadowRoot.append( svg.cloneNode(true) );
+                if (svg) this.shadowRoot.append(svg.cloneNode(true));
 
                 this.dispatchEvent(new CustomEvent('ready'));
                 this.setAttribute('ready', '');

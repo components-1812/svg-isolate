@@ -1,16 +1,22 @@
+/**
+ * Component: @components-1812/svg-isolate
+ * Version: 0.0.2
+ * Repo: https://github.com/components-1812/svg-isolate.git
+ */
 :host {
     position: relative;
     display: inline-block;
-    
+
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
 
     contain: size;
-    
+
     overflow: hidden;
 }
+
 :host svg {
     display: block;
     width: 100%;

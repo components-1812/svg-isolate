@@ -31,7 +31,7 @@ You rarely construct `StyleCollection` directly — it's created internally by `
 
 #### `add(...values)`
 
-Adds one or more entries. Accepts a single value, multiple values as rest params, or a single iterable (`Array`, `Set`, or another `StyleCollection`):
+Adds one or more entries. If the first argument is an iterable (`Array`, `Set`, or another `StyleCollection`), it adds its contents. Otherwise, it treats all arguments as individual items to add:
 
 ```js
 collection.add('circle { fill: red; }');
@@ -89,21 +89,19 @@ Accepts an initial styles object. All three properties are optional.
 | `adopted` | `StyleCollection` | `CSSStyleSheet` objects                    |
 | `raw`     | `StyleCollection` | Raw CSS strings                            |
 
-#### URL normalization
+#### Built-in Validation & Mapping
 
-Entries added to `links` are validated with `URL.canParse()` and normalized to absolute URLs via `new URL(value, document.baseURI)`. Relative paths are accepted and resolved automatically:
+When entries are added to these collections, they are automatically validated and mapped:
+
+- **`adopted`**: Validates that the entry is an instance of `CSSStyleSheet`.
+- **`links`**: Validates that the entry is a non-empty string and a valid URL. It resolves relative paths against `document.baseURI` and stores the **absolute URL string** (`.href`).
+- **`raw`**: Validates that the entry is a string.
+
+Because `links` normalizes URLs, `has()` must be checked against the absolute URL:
 
 ```js
-// relative path
 SVGIsolate.define('svg-isolate', { links: ['/styles/icon.css'] });
 
-// stored internally as:
-// 'https://example.com/styles/icon.css'
-```
-
-This means `has()` must be checked against the normalized form:
-
-```js
 SVGIsolate.styleSheets.links.has('https://example.com/styles/icon.css'); // true
 SVGIsolate.styleSheets.links.has('/styles/icon.css');                     // false
 ```
@@ -144,13 +142,19 @@ This means every instance starts with a copy of the class-level styles, but any 
 
 ### `apply()`
 
-Injects the current collections into the element's shadow DOM and fires the `ready-links` event once all external stylesheets have loaded. Returns `this`.
-
-```js
-el.componentStyles.apply();
-```
+Injects the current collections into the element's shadow DOM. Returns `this`.
 
 Calling `apply()` replaces the previously injected styles entirely — it does not merge with what was there before.
+
+**Internal execution flow:**
+1. Removes the `ready-links` attribute from the element.
+2. Creates a hidden container `<div class="styles" style="display: none;">` to hold `<style>` and `<link>` tags without interfering with the SVG DOM.
+3. Appends all `<link>` elements to the container and tracks their load status.
+4. Appends all raw CSS strings as `<style>` elements to the container.
+5. Removes any previous `.styles` container from the shadow root.
+6. Prepends the new `.styles` container to the shadow root.
+7. Replaces `shadowRoot.adoptedStyleSheets` with the `adopted` collection.
+8. Fires the `ready-links` event and sets the `ready-links` attribute once all `<link>` elements have settled (loaded or errored).
 
 ---
 
@@ -214,12 +218,18 @@ el.componentStyles
 
 ### Listening for external stylesheets
 
-When `links` entries are present, `apply()` fires `ready-links` once all of them have loaded:
+When `links` entries are present, `apply()` fires `ready-links` once all of them have loaded. The event detail contains the HTML `<link>` element and its load status:
 
 ```js
 el.addEventListener('ready-links', ({ detail }) => {
     console.log(detail.results);
-    // [{ href: 'https://example.com/themes/dark.css', status: 'loaded' }]
+    // [
+    //   { 
+    //     link: HTMLLinkElement, 
+    //     href: 'https://example.com/themes/dark.css', 
+    //     status: 'loaded' 
+    //   }
+    // ]
 });
 
 el.componentStyles
@@ -229,7 +239,7 @@ el.componentStyles
 
 ### Targeting SVG internals from an instance
 
-Since styles injected via `componentStyles` live inside the shadow root, they can reach the SVG elements directly — no need for `::part()` or CSS custom properties:
+Since styles injected via `componentStyles` live inside the shadow root (in the `<div class="styles">`), they can reach the SVG elements directly — no need for `::part()` or CSS custom properties:
 
 ```js
 el.componentStyles
