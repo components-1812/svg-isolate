@@ -1,37 +1,5 @@
-* {
-	margin: 0;
-	padding: 0;
-}
-
-:root {
-	color-scheme: dark;
-}
-
-body {
-	padding: 30px 50px;
-	display: flex;
-	gap: 20px;
-	flex-direction: column;
-	align-items: center;
-
-	h1 {
-		text-align: center;
-		font-family: monospace;
-		font-size: clamp(2em, 5vw, 3em);
-		letter-spacing: 2px;
-	}
-
-	p {
-		text-align: center;
-		font-family: monospace;
-		font-size: clamp(1.5em, 5vw, 2em);
-		letter-spacing: 2px;
-	}
-}
-
 svg-isolate {
 	margin-block: 30px;
-	position: relative;
 	width: 500px;
 	height: 500px;
 	outline: 1px dashed gray;
@@ -45,7 +13,6 @@ svg-isolate {
 		right: 10px;
 
 		text-align: center;
-		font-family: monospace;
 		font-size: 14pt;
 		letter-spacing: 1px;
 
@@ -67,6 +34,7 @@ svg-isolate[ready] {
 	--status: 'Complete';
 }
 
+/* Show a loader while loading */
 svg-isolate:not([ready])::after {
 	content: '';
 	width: 20%;
