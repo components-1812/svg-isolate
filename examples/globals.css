@@ -11,10 +11,29 @@
     --footer-link-color-hover: #fff;
     --footer-link-icon-color: #999;
     --footer-link-icon-color-hover: #fff;
+
+    --color-yellow: #d6b914;
+    --color-green: #7ee787;
+    --color-blue: #58a6ff;
+    --color-purple: #b458ff;
+
+    --color-light-gray: #747d88;
+
+    --logs-background-color: #161b22;
+    --logs-border-color: #30363d;
+    --logs-shadow: 0 8px 30px #0000004d;
+
+    --logs-color: #747d88;
+    --logs-font-size: 14px;
+    --logs-line-height: 1.8;
+
+    --logs-border-bottom: 1px solid #ffffff1a;
 }
 
 footer {
+    padding-block: 50px 20px;
     display: flex;
+    justify-content: center;
     gap: 20px;
 
     ul.example-links {

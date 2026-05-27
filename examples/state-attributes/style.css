@@ -1,4 +1,6 @@
 svg-isolate {
+	position: relative;
+
 	margin-block: 30px;
 	width: 500px;
 	height: 500px;
@@ -37,8 +39,8 @@ svg-isolate[ready] {
 /* Show a loader while loading */
 svg-isolate:not([ready])::after {
 	content: '';
-	width: 20%;
-	height: 20%;
+	width: 50px;
+	height: 50px;
 	position: absolute;
 	inset: 0;
 	margin: auto;

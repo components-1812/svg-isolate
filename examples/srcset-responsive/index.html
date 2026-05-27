@@ -6,37 +6,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SVG Isolate: srcset and Resizing</title>
 
+    <link rel="stylesheet" href="../globals.css">
+    <link rel="stylesheet" href="page.css">
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <div class="resized">
+    <main>
+        <div class="resized">
 
-        <h2>Resize the container to observe dynamic <span>srcset</span> selection</h2>
+            <h2>Resize the container to observe dynamic <span>srcset</span> selection</h2>
 
-        <div class="content main"></div>
+            <div class="content main"></div>
 
-        <h2>Scroll down to trigger dynamic lazy loading</h2>
+            <h2>Scroll down to trigger dynamic lazy loading</h2>
 
-        <div class="content scrolled">
-            <p></p>
+            <div class="content scrolled">
+                <p></p>
+            </div>
+
         </div>
 
-    </div>
-
-    <div class="info">
-        <div id="fetch-log">
-            <h3>Fetching LOG:</h3>
-            <div class="content">
-                <div class="logs"></div>
+        <div class="info">
+            <div id="fetch-log">
+                <h3>Fetching LOG:</h3>
+                <div class="content">
+                    <div class="logs"></div>
+                </div>
+            </div>
+            <div class="sources">
+                <h3>Sources:</h3>
+                <ul></ul>
             </div>
         </div>
-        <div class="sources">
-            <h3>Sources:</h3>
-            <ul></ul>
-        </div>
-    </div>
+    </main>
+
+    <footer>
+        <ul class="example-links">
+            <li>
+                <a href="https://github.com/components-1812/svg-isolate/tree/main/examples/state-attributes">Show
+                    example on GitHub</a>
+            </li>
+            <li>
+                <a href="https://codepen.io/FrancoJavierGadea/pen/dPOZMRZ">Open on CodePen</a>
+            </li>
+
+            <li>
+                <a href="/">More examples...</a>
+            </li>
+        </ul>
+    </footer>
 
     <script src="srcript.js" type="module"></script>
 </body>
