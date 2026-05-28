@@ -2,7 +2,7 @@ import SVGIsolate from "/src/SVGIsolate.js"
 
 import ICONS from "./icons.json" with { type: "json" };
 
-SVGIsolate.defaults.base = 'https://raw.githubusercontent.com/twbs/icons/refs/heads/main/icons';
+SVGIsolate.defaults.base = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/';
 
 const Elements = [
 
@@ -130,7 +130,7 @@ for (const [index, element] of Elements.entries()) {
     });
     div.append(button);
 
-    document.querySelector('main').append(div);
+    document.querySelector('.main-content').append(div);
 
 
     Promise.all(promises).then(() => {

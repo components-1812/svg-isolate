@@ -6,63 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SVG Isolate ID Collision Example</title>
 
+    <link rel="stylesheet" href="../globals.css">
+    <link rel="stylesheet" href="page.css">
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+    <main>
+        <h2>Light DOM: <span>clipPath</span> ID collision issue</h2>
 
-    <h2>Light DOM: <span>clipPath</span> ID collision issue</h2>
+        <section>
 
-    <section>
-
-        <!-- Circle -->
-        <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <clipPath id="clipPath">
-                    <circle cx="100" cy="100" r="50" />
-                </clipPath>
-            </defs>
-            <rect x="0" y="0" width="200" height="200" fill="red" stroke="none" clip-path="url(#clipPath)" />
-        </svg>
-
-        <!-- Triangle -->
-        <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <clipPath id="clipPath">
-                    <polygon points="100,50 150,150 50,150" />
-                </clipPath>
-            </defs>
-            <rect x="0" y="0" width="200" height="200" fill="red" stroke="none" clip-path="url(#clipPath)" />
-        </svg>
-
-        <!-- Hexagon -->
-        <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <clipPath id="clipPath">
-                    <polygon points="100,50 150,75 150,125 100,150 50,125 50,75" />
-                </clipPath>
-            </defs>
-            <rect x="0" y="0" width="200" height="200" fill="red" stroke="none" clip-path="url(#clipPath)" />
-        </svg>
-
-        <!-- Heart -->
-        <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <clipPath id="clipPath">
-                    <path d="M100 170 L30 90 A35 35 0 1 1 100 60 A35 35 0 1 1 170 90 Z" />
-                </clipPath>
-            </defs>
-            <rect x="0" y="0" width="200" height="200" fill="red" stroke="none" clip-path="url(#clipPath)" />
-        </svg>
-
-    </section>
-
-    <h2>Shadow DOM: isolated SVG with <span>&lt;svg-isolate&gt;</span></h2>
-
-    <section>
-
-        <!-- Circle -->
-        <svg-isolate>
+            <!-- Circle -->
             <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <clipPath id="clipPath">
@@ -71,10 +26,8 @@
                 </defs>
                 <rect x="0" y="0" width="200" height="200" fill="red" stroke="none" clip-path="url(#clipPath)" />
             </svg>
-        </svg-isolate>
 
-        <!-- Triangle -->
-        <svg-isolate>
+            <!-- Triangle -->
             <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <clipPath id="clipPath">
@@ -83,10 +36,8 @@
                 </defs>
                 <rect x="0" y="0" width="200" height="200" fill="red" stroke="none" clip-path="url(#clipPath)" />
             </svg>
-        </svg-isolate>
 
-        <!-- Hexagon -->
-        <svg-isolate>
+            <!-- Hexagon -->
             <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <clipPath id="clipPath">
@@ -95,10 +46,8 @@
                 </defs>
                 <rect x="0" y="0" width="200" height="200" fill="red" stroke="none" clip-path="url(#clipPath)" />
             </svg>
-        </svg-isolate>
 
-        <!-- Heart -->
-        <svg-isolate>
+            <!-- Heart -->
             <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <clipPath id="clipPath">
@@ -107,20 +56,91 @@
                 </defs>
                 <rect x="0" y="0" width="200" height="200" fill="red" stroke="none" clip-path="url(#clipPath)" />
             </svg>
-        </svg-isolate>
 
-    </section>
+        </section>
 
-    <p>
-        The following SVG elements (<a href="/assets/circle.svg">circle.svg</a>, <a
-            href="/assets/triangle.svg">triangle.svg</a>, <a href="/assets/hexagon.svg">hexagon.svg</a>, <a
-            href="/assets/heart.svg">heart.svg</a>) all use the same <span>clipPath</span> id (id="clipPath"), which
-        causes conflicts in the <b>Light DOM</b> when multiple instances are rendered on the same page.
-    </p>
-    <p>
-        By wrapping them with <span>&lt;svg-isolate&gt;</span>, each SVG is rendered inside its own <b>Shadow DOM</b>,
-        preventing ID and class collisions and ensuring complete style and definition isolation.
-    </p>
+        <h2>Shadow DOM: isolated SVG with <span>&lt;svg-isolate&gt;</span></h2>
+
+        <section>
+
+            <!-- Circle -->
+            <svg-isolate>
+                <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <clipPath id="clipPath">
+                            <circle cx="100" cy="100" r="50" />
+                        </clipPath>
+                    </defs>
+                    <rect x="0" y="0" width="200" height="200" fill="red" stroke="none" clip-path="url(#clipPath)" />
+                </svg>
+            </svg-isolate>
+
+            <!-- Triangle -->
+            <svg-isolate>
+                <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <clipPath id="clipPath">
+                            <polygon points="100,50 150,150 50,150" />
+                        </clipPath>
+                    </defs>
+                    <rect x="0" y="0" width="200" height="200" fill="red" stroke="none" clip-path="url(#clipPath)" />
+                </svg>
+            </svg-isolate>
+
+            <!-- Hexagon -->
+            <svg-isolate>
+                <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <clipPath id="clipPath">
+                            <polygon points="100,50 150,75 150,125 100,150 50,125 50,75" />
+                        </clipPath>
+                    </defs>
+                    <rect x="0" y="0" width="200" height="200" fill="red" stroke="none" clip-path="url(#clipPath)" />
+                </svg>
+            </svg-isolate>
+
+            <!-- Heart -->
+            <svg-isolate>
+                <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <clipPath id="clipPath">
+                            <path d="M100 170 L30 90 A35 35 0 1 1 100 60 A35 35 0 1 1 170 90 Z" />
+                        </clipPath>
+                    </defs>
+                    <rect x="0" y="0" width="200" height="200" fill="red" stroke="none" clip-path="url(#clipPath)" />
+                </svg>
+            </svg-isolate>
+
+        </section>
+
+        <p>
+            The following SVG elements (<a href="/assets/circle.svg">circle.svg</a>, <a
+                href="/assets/triangle.svg">triangle.svg</a>, <a href="/assets/hexagon.svg">hexagon.svg</a>, <a
+                href="/assets/heart.svg">heart.svg</a>) all use the same <span>clipPath</span> id (id="clipPath"), which
+            causes conflicts in the <b>Light DOM</b> when multiple instances are rendered on the same page.
+        </p>
+        <p>
+            By wrapping them with <span>&lt;svg-isolate&gt;</span>, each SVG is rendered inside its own <b>Shadow
+                DOM</b>,
+            preventing ID and class collisions and ensuring complete style and definition isolation.
+        </p>
+    </main>
+
+    <footer>
+        <ul class="example-links">
+            <li>
+                <a href="https://github.com/components-1812/svg-isolate/tree/main/examples/id-collision">Show
+                    example on GitHub</a>
+            </li>
+            <li>
+                <a href="https://codepen.io/FrancoJavierGadea/pen/zxoPqwK">Open on CodePen</a>
+            </li>
+
+            <li>
+                <a href="/">More examples...</a>
+            </li>
+        </ul>
+    </footer>
 
     <script type="module" src="script.js"></script>
 </body>

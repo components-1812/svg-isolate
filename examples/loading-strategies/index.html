@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>SVGIsolate Loading Strategies</title>
 
-        <link rel="stylesheet" href="style.css">
-    </head>
-    <body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVGIsolate Loading Strategies</title>
+
+    <link rel="stylesheet" href="../globals.css">
+    <link rel="stylesheet" href="page.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <main>
         <h1>SVGIsolate Loading Strategies</h1>
 
         <div class="card">
@@ -26,13 +31,32 @@
         </div>
 
         <div class="card">
+            <h4>Lazy (Intersection Observer)</h4>
             <div class="scrollable">
-                <h4>Lazy (Intersection Observer)</h4>
                 <p></p>
                 <svg-isolate src="/assets/heart.svg" loading="lazy"></svg-isolate>
             </div>
         </div>
+    </main>
 
-        <script type="module" src="script.js"></script>
-    </body>
+    <footer>
+        <ul class="example-links">
+            <li>
+                <a href="https://github.com/components-1812/svg-isolate/tree/main/examples/loading-strategies">Show
+                    example on
+                    GitHub</a>
+            </li>
+            <li>
+                <a href="https://codepen.io/FrancoJavierGadea/pen/ogYoxWG">Open on CodePen</a>
+            </li>
+
+            <li>
+                <a href="/">More examples...</a>
+            </li>
+        </ul>
+    </footer>
+
+    <script type="module" src="script.js"></script>
+</body>
+
 </html>

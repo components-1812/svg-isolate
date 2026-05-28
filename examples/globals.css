@@ -16,6 +16,8 @@
     --color-green: #7ee787;
     --color-blue: #58a6ff;
     --color-purple: #b458ff;
+    --color-cyan: #78d9ec;
+    --color-red: #e24141;
 
     --color-light-gray: #747d88;
 
@@ -30,6 +32,10 @@
     --logs-border-bottom: 1px solid #ffffff1a;
 }
 
+body {
+    padding: 20px;
+}
+
 footer {
     padding-block: 50px 20px;
     display: flex;
@@ -40,6 +46,10 @@ footer {
         display: flex;
         flex-wrap: wrap;
         gap: 30px;
+
+        @media (width <=700px) {
+            flex-direction: column;
+        }
 
         li {
             list-style: none;

@@ -1,58 +1,51 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
+    <defs>
+        <clipPath id="clipPath">
+            <path d="M100 170 L30 90 A35 35 0 1 1 100 60 A35 35 0 1 1 170 90 Z" />
+        </clipPath>
+    </defs>
 
     <style>
         * {
             box-sizing: border-box;
         }
-
         body {
             background: red;
             margin: 0;
         }
-
         p {
             color: green;
             font-size: 32px;
         }
-
         div {
             display: flex;
         }
-
-        circle {
+        .heart {
             fill: #7C3AED;
+            transform-origin: center;
         }
-
-        rect {
+        .rect {
             fill: #1E1B4B;
-            rx: 12px;
-        }
-
-        text {
-            font-size: 14px;
-            fill: #E2E8F0;
-            font-family: serif;
+            rx: 25px;
         }
     </style>
 
-    <rect onmouseover="import('./hack.js').then(mod => mod.hacking()); alert('You are attacked by SVG check the console');" x="10" y="10" width="180" height="180" rx="12" />
-    <circle cx="100" cy="85" r="40" />
-    <text x="100" y="150" text-anchor="middle">hello svg</text>
-    <text x="100" y="170" text-anchor="middle" style="font-size:10px;fill:#94A3B8">unsanitized</text>
-
+    <rect class="rect" onmouseover="import('./hack.js').then(mod => mod.hacking()); alert('You are attacked by SVG check the console');" x="10" y="10" width="280" height="280" rx="12" />
+    
+    <g class="heart" transform="translate(50, 50)">
+        <rect x="0" y="0" width="200" height="200" stroke="none" clip-path="url(#clipPath)" />
+    </g>
+    
     <script>
         console.log('SVG script executed — this should not run inside svg-isolate');
 
-        const circle = document.querySelector('circle');
+        const heart = document.querySelector('.heart');
 
-        if (circle) {
-            circle.animate(
-                [{ r: 40 }, { r: 55 }, { r: 40 }],
+        if (heart) {
+            heart.animate(
+                [{ scale: 1 }, { scale: 1.5 }, { scale: 1 }],
                 { duration: 1200, iterations: Infinity, easing: 'ease-in-out' }
             );
         }
-
-        
     </script>
-
 </svg>

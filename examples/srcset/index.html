@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SVG Isolate: srcset and Resizing</title>
 
+    <link rel="stylesheet" href="../globals.css">
+    <link rel="stylesheet" href="page.css">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -13,35 +15,53 @@
 
     <h1>How it behaves in different container widths</h1>
 
-
-    <div class="container">
-
-
-        <div class="info">
-            <p>Multiple instances with the exact same srcset showing asset switching based on the component's own
-                rendered width</p>
+    <main>
+        <div class="container">
+    
+    
+            <div class="info">
+                <p>Multiple instances with the exact same srcset showing asset switching based on the component's own
+                    rendered width</p>
+            </div>
+    
+            <div class="content">
+    
+                <svg-isolate width="200px" style="--width: '200px'"
+                    srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w"
+                    loading="lazy"></svg-isolate>
+    
+                <svg-isolate width="400px" style="--width: '400px'; grid-column: span 2"
+                    srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w"
+                    loading="lazy"></svg-isolate>
+    
+                <svg-isolate width="800px" style="--width: '800px'; grid-column: span 4"
+                    srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w"
+                    loading="lazy"></svg-isolate>
+    
+                <svg-isolate width="1200px" style="--width: '1200px'; grid-column: span 6"
+                    srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w"
+                    loading="lazy"></svg-isolate>
+            </div>
+    
         </div>
+    </main>
 
-        <div class="content">
+    <footer>
+        <ul class="example-links">
+            <li>
+                <a href="https://github.com/components-1812/svg-isolate/tree/main/examples/srcset">Show
+                    example on GitHub</a>
+            </li>
+            <li>
+                <a href="#">Open on CodePen</a>
+            </li>
 
-            <svg-isolate width="200px" style="--width: '200px'"
-                srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w"
-                loading="lazy"></svg-isolate>
+            <li>
+                <a href="/">More examples...</a>
+            </li>
+        </ul>
+    </footer>
 
-            <svg-isolate width="400px" style="--width: '400px'; grid-column: span 2"
-                srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w"
-                loading="lazy"></svg-isolate>
-
-            <svg-isolate width="800px" style="--width: '800px'; grid-column: span 4"
-                srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w"
-                loading="lazy"></svg-isolate>
-
-            <svg-isolate width="1200px" style="--width: '1200px'; grid-column: span 6"
-                srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w"
-                loading="lazy"></svg-isolate>
-        </div>
-
-    </div>
 
     <script src="srcript.js" type="module"></script>
 </body>

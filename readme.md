@@ -20,6 +20,20 @@
 - 📐 **Responsive** — automatic candidate swapping on resize via `ResizeObserver`.
 - 🧩 **Extensible** — designed to be subclassed. Override fetching, sanitization, rendering, or defaults.
 
+## Examples
+
+- [**Examples**](https://components-1812.github.io/svg-isolate/)
+- [**Codepen Examples**](https://codepen.io/collection/YwZMEz)
+	- [id collision](https://codepen.io/FrancoJavierGadea/pen/zxoPqwK)
+	- [loading strategies](https://codepen.io/FrancoJavierGadea/pen/ogYoxWG)
+	- [base](https://codepen.io/FrancoJavierGadea/pen/VYmrapr)
+	- [cache visualization](https://codepen.io/FrancoJavierGadea/pen/jEVaqBj)
+	- [no cache](https://codepen.io/FrancoJavierGadea/pen/ByQmKRv)
+	- [sanitize](https://codepen.io/FrancoJavierGadea/pen/jEVaqmg)
+	- [state attributes](https://codepen.io/FrancoJavierGadea/pen/dPOZMRZ)
+	- [srcset and responsive](https://codepen.io/FrancoJavierGadea/pen/PwbONjy)
+
+
 ## Contents
 
 - [Installation](#installation)
@@ -37,9 +51,6 @@
 - [Attributes](#attributes)
 - [Events](#events)
 
-## Examples
-
-- [**Stackblitz Examples**](https://stackblitz.com/edit/stackblitz-starters-pof6s1fk?file=index.html)
 
 <br>
 

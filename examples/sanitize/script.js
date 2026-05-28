@@ -16,10 +16,16 @@ class SVGIsolateDebug extends SVGIsolate {
 
     _renderSVG(svg) {
 
-        const pre = document.createElement('pre');
-        pre.textContent = svg;
+        const html = Prism.highlight(svg, Prism.languages.html, 'html');
 
-        this.closest('.row').querySelector('code').append(pre);
+
+        const pre = document.createElement('pre');
+        const code = document.createElement('code');
+        code.innerHTML = html;
+        code.classList.add('language-html');
+        pre.appendChild(code);
+
+        this.closest('.row')?.querySelector('.code')?.append(pre);
 
         return super._renderSVG(svg);
     }
@@ -34,17 +40,23 @@ SVGIsolateDebug.define(null, {
 document.querySelector('svg-isolate[sanitize]')
     .componentStyles.add({
         raw: `
-        circle {
+        .heart {
             fill: #cf0822;
+            animation: beat 2s ease-in-out infinite;
+            transform-origin: center;
         }
-        rect {
-            fill: #3179bd;
-            rx: 12px;
+        .rect {
+            fill: #043e75ff;
         }
-        text {
-            font-size: 14px;
-            fill: #000000;
-            font-family: serif;
+
+      
+        @keyframes beat {
+            0%, 100% {
+                scale: 1;
+            }
+            50% {
+                scale: 1.5;
+            }
         }
     `
     })

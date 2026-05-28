@@ -1,26 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>SVG Isolate — sanitize demo</title>
 
-        <link rel="stylesheet" href="style.css">
-    </head>
-    <body>
-        
-        <h2>Sanitized (script blocked, global styles contained):</h2>
-        <div class="row">
-            <svg-isolate src="./dirty.svg" sanitize expose-svg></svg-isolate>
-            <code></code>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Isolate — sanitize demo</title>
+
+    <link rel="stylesheet" href="../globals.css">
+    <link rel="stylesheet" href="page.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/themes/prism-okaidia.min.css">
+</head>
+
+<body>
+
+    <main>
+        <h2>Without sanitize</h2>
+        <div class="description">
+            <p>script won't run, but <span>&lt;script&gt;</span> node stays in DOM</p>
+            <p><span>onmouseover</span> and other events <strong>still work</strong></p>
+            <p>styles are contained in shadow dom & they don't leak out</p>
+            <p>check <a href="./dirty.svg" target="_blank">dirty.svg</a> in a new tab to see how it really is</p>
         </div>
 
-        <h2>Without sanitize (script still won't run, but &lt;script&gt; node stays in DOM):</h2>
         <div class="row">
             <svg-isolate src="./dirty.svg"></svg-isolate>
-            <code></code>
+            <div class="code"></div>
         </div>
 
-        <script src="script.js" type="module"></script>
-    </body>
+        <h2>Sanitized</h2>
+        <div class="row">
+            <svg-isolate src="./dirty.svg" sanitize expose-svg></svg-isolate>
+            <div class="code"></div>
+        </div>
+    </main>
+
+    <footer>
+        <ul class="example-links">
+            <li>
+                <a href="https://github.com/components-1812/svg-isolate/tree/main/examples/sanitize">Show
+                    example on GitHub</a>
+            </li>
+            <li>
+                <a href="https://codepen.io/FrancoJavierGadea/pen/jEVaqmg">Open on CodePen</a>
+            </li>
+
+            <li>
+                <a href="/">More examples...</a>
+            </li>
+        </ul>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-markup.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-clike.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-css.min.js"></script>
+
+    <script src="script.js" type="module"></script>
+</body>
+
 </html>
