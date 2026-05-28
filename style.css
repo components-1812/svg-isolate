@@ -10,7 +10,13 @@ h1 {
     }
 }
 
-ul {
+main {
+	max-width: 700px;
+	margin: 0 auto;
+	padding: 20px;
+}
+
+ul.examples-list {
 	list-style: none;
 	display: flex;
 	flex-direction: column;

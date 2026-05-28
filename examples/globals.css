@@ -13,6 +13,7 @@
     --footer-link-icon-color-hover: #fff;
 
     --color-yellow: #d6b914;
+    --color-yellow-hover: #f0d618;
     --color-green: #7ee787;
     --color-blue: #58a6ff;
     --color-purple: #b458ff;
@@ -37,10 +38,12 @@ body {
 }
 
 footer {
-    padding-block: 50px 20px;
+    padding-block: 50px 10px;
     display: flex;
     justify-content: center;
-    gap: 20px;
+    align-items: center;
+    flex-direction: column;
+    gap: 30px;
 
     ul.example-links {
         display: flex;
@@ -98,4 +101,19 @@ footer {
         }
     }
 
+    p.author {
+        text-align: center;
+        font-size: 12pt;
+        letter-spacing: 2px;
+        color: var(--footer-link-color);
+
+        a {
+            color: var(--color-yellow);
+            text-decoration: none;
+
+            &:hover {
+                color: var(--color-yellow-hover);
+            }
+        }
+    }
 }
