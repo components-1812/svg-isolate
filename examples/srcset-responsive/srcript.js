@@ -1,9 +1,10 @@
-import SVGIsolate from "/src/SVGIsolate.js";
+import SVGIsolate from 'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate@main/src/SVGIsolate.js';
 
+SVGIsolate.defaults.base = '/svg-isolate';
 
 SVGIsolate.define(null, {
     links: [
-        '/src/SVGIsolate.css'
+        'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate@main/src/SVGIsolate.css'
     ]
 });
 

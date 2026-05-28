@@ -1,4 +1,4 @@
-import SVGIsolate from "/src/SVGIsolate.js";
+import SVGIsolate from 'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate@main/src/SVGIsolate.js';
 
 const svg = document.querySelector('svg-isolate');
 
@@ -26,6 +26,6 @@ svg.addEventListener('ready', (e) => {
 
 SVGIsolate.define(null, {
     links: [
-        '/src/SVGIsolate.css'
+        'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate@main/src/SVGIsolate.css'
     ]
 });

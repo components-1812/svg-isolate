@@ -1,4 +1,4 @@
-import SVGIsolate from "/src/SVGIsolate.js";
+import SVGIsolate from 'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate@main/src/SVGIsolate.js';
 
 import DOMPurify from "https://cdn.jsdelivr.net/npm/dompurify@3.4.3/dist/purify.es.mjs";
 
@@ -33,7 +33,7 @@ class SVGIsolateDebug extends SVGIsolate {
 
 SVGIsolateDebug.define(null, {
     links: [
-        '/src/SVGIsolate.css',
+        'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate@main/src/SVGIsolate.css',
     ]
 });
 

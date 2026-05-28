@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import SVGIsolate from 'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate/src/SVGIsolate.js';
-=======
-import SVGIsolate from '/src/SVGIsolate.js';
->>>>>>> main
+import SVGIsolate from 'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate@main/src/SVGIsolate.js';
 
 
 SVGIsolate.defaults.base = '/svg-isolate';//gh-pages
@@ -34,10 +30,6 @@ class SVGIsolateDebug extends SVGIsolate {
 
 SVGIsolateDebug.define(null, {
     links: [
-<<<<<<< HEAD
-        'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate/src/SVGIsolate.css'
-=======
-        '/src/SVGIsolate.css'
->>>>>>> main
+        'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate@main/src/SVGIsolate.css'
     ]
 });

@@ -1,4 +1,4 @@
-import SVGIsolate from "/src/SVGIsolate.js"
+import SVGIsolate from 'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate@main/src/SVGIsolate.js'
 
 import ICONS from "./icons.json" with { type: "json" };
 
@@ -35,7 +35,7 @@ for (const [index, element] of Elements.entries()) {
     const tagName = `svg-isolate-${index}`;
 
     element.define(tagName, {
-        links: ["/src/SVGIsolate.css"]
+        links: ['https://cdn.jsdelivr.net/gh/components-1812/svg-isolate@main/src/SVGIsolate.css']
     });
 
     const div = document.createElement('div');

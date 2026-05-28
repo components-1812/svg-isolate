@@ -1,4 +1,4 @@
-import SVGIsolate from '/src/SVGIsolate.js';
+import SVGIsolate from 'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate@main/src/SVGIsolate.js';
 
 function LOG(url, src, base){
 
