@@ -1,0 +1,11 @@
+svg-isolate,
+svg {
+    height: 200px;
+    width: 200px;
+    outline: 1px dashed gray;
+}
+
+/* Prevent flickering */
+svg-isolate:not([ready]) {
+    visibility: hidden;
+}

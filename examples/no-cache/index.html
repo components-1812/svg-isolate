@@ -1,41 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SVGIsolate: No Cache Example</title>
 
+    <link rel="stylesheet" href="../globals.css">
+    <link rel="stylesheet" href="page.css">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-    <h2>Without Cache (Each Instance Fetches the SVG)</h2>
-    <div class="row">
-        <svg-isolate src="/assets/circle.svg" no-cache></svg-isolate>
+    <main>
+        <h2>Without Cache (Each Instance Fetches the SVG)</h2>
+        <div class="row">
+            <svg-isolate src="/assets/circle.svg" no-cache></svg-isolate>
 
-        <svg-isolate src="/assets/circle.svg" no-cache></svg-isolate>
+            <svg-isolate src="/assets/circle.svg" no-cache></svg-isolate>
 
-        <svg-isolate src="/assets/circle.svg" no-cache></svg-isolate>
+            <svg-isolate src="/assets/circle.svg" no-cache></svg-isolate>
 
-        <svg-isolate src="/assets/circle.svg" no-cache></svg-isolate>
-    </div>
+            <svg-isolate src="/assets/circle.svg" no-cache></svg-isolate>
+        </div>
 
-    <h2>Shared Cache (One Fetch, Multiple Instances)</h2>
+        <h2>Shared Cache (One Fetch, Multiple Instances)</h2>
 
-    <div class="row">
-        <svg-isolate src="/assets/hexagon.svg"></svg-isolate>
+        <div class="row">
+            <svg-isolate src="/assets/hexagon.svg"></svg-isolate>
 
-        <svg-isolate src="/assets/hexagon.svg"></svg-isolate>
+            <svg-isolate src="/assets/hexagon.svg"></svg-isolate>
 
-        <svg-isolate src="/assets/hexagon.svg"></svg-isolate>
+            <svg-isolate src="/assets/hexagon.svg"></svg-isolate>
 
-        <svg-isolate src="/assets/hexagon.svg"></svg-isolate>
-    </div>
+            <svg-isolate src="/assets/hexagon.svg"></svg-isolate>
+        </div>
 
-    <div id="fetch-log">
-        <h3>Fetching LOG:</h3>
-    </div>
+        <div id="fetch-log">
+            <h3>Fetching LOG:</h3>
+        </div>
+    </main>
+
+    <footer>
+        <ul class="example-links">
+            <li>
+                <a href="https://github.com/components-1812/svg-isolate/tree/main/examples/no-cache">Show example on
+                    GitHub</a>
+            </li>
+            <li>
+                <a href="https://codepen.io/FrancoJavierGadea/pen/ByQmKRv">Open on CodePen</a>
+            </li>
+
+            <li>
+                <a href="/">More examples...</a>
+            </li>
+        </ul>
+    </footer>
 
     <script type="module" src="script.js"></script>
 </body>
+
 </html>

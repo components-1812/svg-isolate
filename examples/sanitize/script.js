@@ -1,56 +1,63 @@
 import SVGIsolate from "/src/SVGIsolate.js";
 
-//mport 'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/index.bundle.min.js';
-//import SVGIsolate from 'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/SVGIsolate.min.js';
-
 import DOMPurify from "https://cdn.jsdelivr.net/npm/dompurify@3.4.3/dist/purify.es.mjs";
 
 
-document.querySelectorAll('svg-isolate')
-.forEach(element => {
+class SVGIsolateDebug extends SVGIsolate {
 
-    element.addEventListener('ready', (e) => {
+    static sanitizer = function (raw) {
 
-        const svg = e.target.shadowRoot.querySelector('svg');
+        return DOMPurify.sanitize(raw, {
+            USE_PROFILES: { svg: true },
+            FORBID_TAGS: ['style', 'script'],
+            FORBID_ATTR: ['style'],
+        });
+    }
+
+    _renderSVG(svg) {
+
+        const html = Prism.highlight(svg, Prism.languages.html, 'html');
+
 
         const pre = document.createElement('pre');
-        pre.textContent = svg.outerHTML;
+        const code = document.createElement('code');
+        code.innerHTML = html;
+        code.classList.add('language-html');
+        pre.appendChild(code);
 
-        e.target.closest('.row').querySelector('code').append(pre);
-    });
-})
+        this.closest('.row')?.querySelector('.code')?.append(pre);
 
-SVGIsolate.sanitize = function(raw){
-
-    return DOMPurify.sanitize(raw, {
-        USE_PROFILES: { svg: true },
-        FORBID_TAGS: ['style', 'script'],
-        FORBID_ATTR: ['style'],
-    });
+        return super._renderSVG(svg);
+    }
 }
 
-SVGIsolate.define(null,  {
+SVGIsolateDebug.define(null, {
     links: [
-        //'/dist/SVGIsolate.css',
-        'https://cdn.jsdelivr.net/npm/@components-1812/svg-isolate@0.0.2-alpha.3/dist/SVGIsolate.min.css'
+        '/src/SVGIsolate.css',
     ]
 });
 
 document.querySelector('svg-isolate[sanitize]')
-.componentStyles.add({
-    raw: `
-        circle {
+    .componentStyles.add({
+        raw: `
+        .heart {
             fill: #cf0822;
+            animation: beat 2s ease-in-out infinite;
+            transform-origin: center;
         }
-        rect {
-            fill: #3179bd;
-            rx: 12px;
+        .rect {
+            fill: #043e75ff;
         }
-        text {
-            font-size: 14px;
-            fill: #000000;
-            font-family: serif;
+
+      
+        @keyframes beat {
+            0%, 100% {
+                scale: 1;
+            }
+            50% {
+                scale: 1.5;
+            }
         }
     `
-})
-.apply();
+    })
+    .apply();

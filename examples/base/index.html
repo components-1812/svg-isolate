@@ -1,55 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SVGIsolate: Base URL Remapping</title>
 
+    <link rel="stylesheet" href="../globals.css">
+    <link rel="stylesheet" href="page.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
 
+<body>
     <h1>Base URL Remapping</h1>
 
-    <div class="row">
-        <svg-isolate src="/assets/circle.svg" base="/svg-isolate"></svg-isolate>
+    <main>
 
-        <svg-isolate src="/hexagon.svg" base="/svg-isolate/assets"></svg-isolate>
+        <div class="resized">
+            <svg-isolate 
+                class="svg-isolate" 
+                srcset="
+                    /solid/arrow-down-circle.svg 200w,
+                    /solid/arrow-path.svg 400w,
+                    /solid/bars-2.svg 600w,
+                    /outline/cake.svg 800w,
+                    /outline/check.svg 1000w,
+                    /outline/cpu-chip.svg 1200w
+                " 
+                base="https://cdn.jsdelivr.net/npm/heroicons@2.2.0/24"
+                responsive
+            ></svg-isolate>
+        </div>
 
-        <svg-isolate src="../../assets/triangle.svg" base="/"></svg-isolate>
+        <section>
+            <div class="icons">
+                <div class="row">
+                    <svg-isolate class="svg-isolate" src="/assets/circle.svg" base="/"></svg-isolate>
+    
+                    <svg-isolate class="svg-isolate" src="/hexagon.svg" base="/assets"></svg-isolate>
+    
+                    <svg-isolate class="svg-isolate" src="../../assets/triangle.svg" base="/"></svg-isolate>
+    
+                    <svg-isolate class="svg-isolate" src="/heart.svg" base="../../assets"></svg-isolate>
+                </div>
+    
+                <div class="row">
+                    <bootstrap-icon-svg class="svg-isolate" src="/0-circle.svg"></bootstrap-icon-svg>
+    
+                    <bootstrap-icon-svg class="svg-isolate" src="/1-circle.svg"></bootstrap-icon-svg>
+    
+                    <bootstrap-icon-svg class="svg-isolate" src="/2-circle.svg"></bootstrap-icon-svg>
+    
+                    <bootstrap-icon-svg class="svg-isolate" src="/3-circle.svg"></bootstrap-icon-svg>
+                </div>
+            </div>
 
-        <svg-isolate src="/heart.svg" base="../../assets"></svg-isolate>
-    </div>
+            <div id="fetch-log">
+                <h3>Fetching LOG:</h3>
+                <div class="content">
+                    <div class="logs"></div>
+                </div>
+            </div>
+        </section>
+    </main>
 
-    <div class="row">
-        <bootstrap-icon-svg src="/0-circle.svg"></bootstrap-icon-svg>
+    <footer>
+        <ul class="example-links">
+            <li>
+                <a href="https://github.com/components-1812/svg-isolate/tree/main/examples/base">Show example on GitHub</a>
+            </li>
+            <li>
+                <a href="https://codepen.io/FrancoJavierGadea/pen/VYmrapr">Open on CodePen</a>
+            </li>
 
-        <bootstrap-icon-svg src="/1-circle.svg"></bootstrap-icon-svg>
-
-        <bootstrap-icon-svg src="/2-circle.svg"></bootstrap-icon-svg>
-
-        <bootstrap-icon-svg src="/3-circle.svg"></bootstrap-icon-svg>
-    </div>
-
-    <div class="resized">
-        <svg-isolate
-            srcset="
-                /solid/arrow-down-circle.svg 200w,
-                /solid/arrow-path.svg 400w,
-                /solid/bars-2.svg 600w,
-                /outline/cake.svg 800w,
-                /outline/check.svg 1000w,
-                /outline/cpu-chip.svg 1200w
-            "
-            base="https://raw.githubusercontent.com/tailwindlabs/heroicons/refs/heads/master/optimized/24/"
-            responsive
-        ></svg-isolate>
-    </div>
-
-    <div id="fetch-log">
-        <h3>Fetching LOG:</h3>
-    </div>
+            <li>
+                <a href="/">More examples...</a>
+            </li>
+        </ul>
+    </footer>
 
     <script type="module" src="script.js"></script>
 </body>
+
 </html>

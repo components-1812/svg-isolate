@@ -1,54 +1,20 @@
-* {
-	margin: 0;
-	padding: 0;
-}
-:root {
-	color-scheme: dark;
-}
-body {
-	padding: 30px 50px;
-	display: flex;
-	gap: 20px;
-	flex-direction: column;
-	align-items: center;
-}
 svg-isolate {
 	outline: 1px dashed gray;
 }
 
+svg-isolate.highlight {
+	outline: 1px dashed red;
+}
 
-.resized {
-	position: relative;
-	width: 300px;
-	
-	outline: 1px dashed rgb(214, 185, 20);
-	overflow: hidden;
-	resize: horizontal;
+svg-isolate::before {
+	content: var(--width);
 
-	& > * {
-		padding: 20px;
-		height: 300px;
-	}
+	position: absolute;
+	bottom: 10px;
+	right: 10px;
 
-	.scrolled {
-		overflow-y: scroll;
-		p {
-			height: 500px;
-		}
-	}
+	font-size: 14pt;
+	letter-spacing: 1px;
 
-	&::before  {
-		box-sizing: border-box;
-		padding: 10px;
-		width: 100%;
-		content: var(--width);
-		display: block;
-
-		text-align: center;
-		font-family: monospace;
-		font-size: 14pt;
-		letter-spacing: 1px;
-		
-		color: #ffffff;
-	}
+	color: gray;
 }

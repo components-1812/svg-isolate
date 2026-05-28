@@ -1,5 +1,4 @@
-
-import SVGIsolate from 'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate/src/SVGIsolate.js';
+import SVGIsolate from '/src/SVGIsolate.js';
 
 function LOG(url, src, base){
 
@@ -7,13 +6,17 @@ function LOG(url, src, base){
 
     const div = document.createElement('div');
     div.classList.add('log');
+    div.dataset.src = src;
+    div.dataset.base = base;
 
     div.innerHTML = /*html*/`
         <p>Fetching: <a href="${url}" target="_blank">${url}</a></p>
         <p>src: <span>${src}</span> base: <span>${base}</span></p>
     `;
 
-    document.querySelector('#fetch-log').append(div);
+    document.querySelector('#fetch-log .content .logs').append(div);
+
+    div.scrollIntoView({ behavior: 'smooth', block: 'end' });
 }
 
 [
@@ -42,7 +45,7 @@ class BootstrapIconsSVG extends SVGIsolate {
 
     static defaults = {
         ...super.defaults,
-        base: 'https://raw.githubusercontent.com/twbs/icons/refs/heads/main/icons'
+        base: 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons'
     }
 }
 
@@ -53,3 +56,5 @@ BootstrapIconsSVG.define('bootstrap-icon-svg', {
 });
 
 
+window.SVGIsolate = SVGIsolate;
+window.BootstrapIconsSVG = BootstrapIconsSVG;

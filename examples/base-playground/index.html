@@ -6,27 +6,45 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>SVGIsolate: base playground</title>
 
+        <link rel="stylesheet" href="../globals.css">
+        <link rel="stylesheet" href="page.css">
         <link rel="stylesheet" href="style.css">
     </head>
 
     <body>
 
-        <div class="playground">
-            <h2>Resolve</h2>
-            <div class="inputs">
-                <label>
-                    Src
-                    <input type="text" name="src" />
-                </label>
-                <label>
-                    Base
-                    <input type="text" name="base" placeholder="/" />
-                </label>
+        <main>
+            <div class="playground">
+                <h2>Resolve</h2>
+                <div class="inputs">
+                    <label>
+                        Src
+                        <input type="text" name="src" />
+                    </label>
+                    <label>
+                        Base
+                        <input type="text" name="base" placeholder="/" />
+                    </label>
+                </div>
+                <div class="result"></div>
             </div>
-            <div class="result"></div>
-        </div>
+    
+            <div class="table"></div>
+        </main>
 
-        <div class="table"></div>
+        <footer>
+            <ul class="example-links">
+                <li>
+                    <a href="https://github.com/components-1812/svg-isolate/tree/main/examples/base-playground">Show example on GitHub</a>
+                </li>
+                <li>
+                    <a href="https://codepen.io/FrancoJavierGadea/pen/VYmrapr">Open on CodePen</a>
+                </li>
+                <li>
+                    <a href="/">More examples...</a>
+                </li>
+            </ul>
+        </footer>
 
         <script type="module" src="script.js"></script>
     </body>

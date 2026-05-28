@@ -1,33 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>SVG Isolate: srcset and Resizing</title>
 
-        <link rel="stylesheet" href="style.css">
-    </head>
-    <body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Isolate: srcset and Resizing</title>
 
+    <link rel="stylesheet" href="../globals.css">
+    <link rel="stylesheet" href="page.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main>
         <div class="resized">
 
-            <div>
-                <svg-isolate id="1"
-                    srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w" 
-                    responsive
-                ></svg-isolate>
+            <h2>Resize the container to observe dynamic <span>srcset</span> selection</h2>
+
+            <div class="content main"></div>
+
+            <h2>Scroll down to trigger dynamic lazy loading</h2>
+
+            <div class="content scrolled">
+                <p></p>
             </div>
 
-            <div class="scrolled">
-                <p></p>
-                <svg-isolate id="2"
-                    srcset="/assets/circle.svg 300w, /assets/triangle.svg 600w, /assets/hexagon.svg 900w, /assets/heart.svg 1200w" 
-                    responsive
-                    loading="lazy"
-                ></svg-isolate>
-            </div>
-            
         </div>
-        <script src="srcript.js" type="module"></script>
-    </body>
+
+        <div class="info">
+            <div id="fetch-log">
+                <h3>Fetching LOG:</h3>
+                <div class="content">
+                    <div class="logs"></div>
+                </div>
+            </div>
+            <div class="sources">
+                <h3>Sources:</h3>
+                <ul></ul>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <ul class="example-links">
+            <li>
+                <a href="https://github.com/components-1812/svg-isolate/tree/main/examples/srcset-responsive">Show
+                    example on GitHub</a>
+            </li>
+            <li>
+                <a href="https://codepen.io/FrancoJavierGadea/pen/PwbONjy">Open on CodePen</a>
+            </li>
+
+            <li>
+                <a href="/">More examples...</a>
+            </li>
+        </ul>
+    </footer>
+
+    <script src="srcript.js" type="module"></script>
+</body>
+
 </html>

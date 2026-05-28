@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import SVGIsolate from 'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate/src/SVGIsolate.js';
+=======
+import SVGIsolate from '/src/SVGIsolate.js';
+>>>>>>> main
 
 
 SVGIsolate.defaults.base = '/svg-isolate';//gh-pages
@@ -13,7 +17,7 @@ class SVGIsolateDebug extends SVGIsolate {
 
         //Show fetches in the console and on the page to demonstrate caching effectiveness
         this.fetchCounter++;
-        
+
         console.log(`[DEBUG] ${this.fetchCounter} Fetching: ${src}`);
 
         const p = document.createElement('p');
@@ -30,8 +34,10 @@ class SVGIsolateDebug extends SVGIsolate {
 
 SVGIsolateDebug.define(null, {
     links: [
+<<<<<<< HEAD
         'https://cdn.jsdelivr.net/gh/components-1812/svg-isolate/src/SVGIsolate.css'
+=======
+        '/src/SVGIsolate.css'
+>>>>>>> main
     ]
 });
-
-window.SVGIsolate = SVGIsolateDebug;
