@@ -98,4 +98,19 @@ footer {
         }
     }
 
+    p.author {
+        text-align: center;
+        font-size: 12pt;
+        letter-spacing: 2px;
+        color: var(--footer-link-color);
+
+        a {
+            color: var(--color-yellow);
+            text-decoration: none;
+
+            &:hover {
+                color: var(--color-yellow-hover);
+            }
+        }
+    }
 }
