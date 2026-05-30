@@ -2,9 +2,11 @@
     text-decoration: none;
     cursor: pointer;
     transition: background .2s;
+
     display: flex;
-    flex-wrap: wrap;
     gap: 2px;
+
+    white-space: nowrap;
 
     &:hover {
         background: var(--border-color);

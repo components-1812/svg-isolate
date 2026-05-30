@@ -13,19 +13,20 @@ main {
     h2 {
         text-align: center;
         font-family: monospace;
-        font-size: 20pt;
+        font-size: clamp(1.5em, 5vw, 2em);
         letter-spacing: 2px;
     }
 
     p {
         font-family: monospace;
-        font-size: 16pt;
+        font-size: clamp(1em, 3vw, 1.3em);
         max-width: 90ch;
         margin: 10px auto;
     }
 
     span {
         color: #9f9;
+        white-space: nowrap;
     }
 
     a {

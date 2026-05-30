@@ -12,15 +12,22 @@ main {
     position: relative;
     width: 870px;
 
+    @media (width <= 1000px){
+        width: 570px;
+    }
+    @media (width <= 650px){
+        width: 370px;
+    }
+
     outline: 1px dashed var(--color-yellow);
     overflow: hidden;
     resize: horizontal;
 
     h2 {
         text-align: center;
-        white-space: nowrap;
         padding: 10px;
 
+        font-size: clamp(1.1em, 3vw, 1.4em);
         span {
             color: var(--color-green);
         }
@@ -47,6 +54,10 @@ main {
 .info {
     display: flex;
     gap: 20px;
+
+    @media (width <= 1000px){
+        flex-direction: column-reverse;
+    }
 
     font-size: 12pt;
 
