@@ -37,10 +37,12 @@ body {
 }
 
 footer {
-    padding-block: 50px 20px;
+    padding-block: 50px 10px;
     display: flex;
     justify-content: center;
-    gap: 20px;
+    align-items: center;
+    flex-direction: column;
+    gap: 30px;
 
     ul.example-links {
         display: flex;

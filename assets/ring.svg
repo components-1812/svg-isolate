@@ -1,0 +1,11 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+
+    <defs>
+        <clipPath id="clipPath">
+            <path clip-rule="evenodd" d="M 100,25 A 75,75 0 1,0 100,175 A 75,75 0 1,0 100,25 M 100,65 A 35,35 0 1,0 100,135 A 35,35 0 1,0 100,65" />
+        </clipPath>
+    </defs>
+
+    <rect x="0" y="0" width="200" height="200" fill="red" stroke="none" clip-path="url(#clipPath)" />
+
+</svg>

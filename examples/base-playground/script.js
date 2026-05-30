@@ -1,8 +1,6 @@
 import SVGIsolate from "/src/SVGIsolate.js";
 
-const examples = await (await fetch('examples.json')).json();
-
-for(const example of examples) {
+function renderExample(example) {
 
     const { src, base, desc } = example;
 
@@ -14,7 +12,7 @@ for(const example of examples) {
     const div = document.createElement('div');
     div.classList.add('row');
 
-    div.innerHTML = /*html*/`
+    div.innerHTML = /*html*/`<div class="row-content">
         <div class="desc" title="${desc}">${desc}</div>
         <div class="sources">
             <div class="src" title="${src}">
@@ -33,12 +31,21 @@ for(const example of examples) {
             <span class="search">${search}</span>
             <span class="hash">${hash}</span>
         </a>
+    </div>
     `;
 
-    document.querySelector('.table').append(div);
+    return div;
 }
 
-console.log(examples);
+const examples = await (await fetch('examples.json')).json();
+
+const frag = document.createDocumentFragment();
+
+for(const example of examples) {
+    frag.append(renderExample(example));
+}
+
+document.querySelector('.table').append(frag);
 
 
 
@@ -59,7 +66,7 @@ function showResult(src, base = '/') {
         <span class="srcPath">${srcPath}</span>
     `;
 
-    document.querySelector('.playground .result').replaceChildren(a);
+    document.querySelector('.playground .result .result-content').replaceChildren(a);
 }
 
 const srcInput = document.querySelector('input[name="src"]');

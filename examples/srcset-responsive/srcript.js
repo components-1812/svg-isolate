@@ -64,10 +64,14 @@ document.body.addEventListener('mouseout', ({ target }) => {
 
 // Create elements -------------------------------------------------------------------------------
 const sources = [
+    '/assets/ovni.svg 100w',
+    '/assets/star.svg 200w',
     '/assets/circle.svg 300w',
+    '/assets/ring.svg 400w',
     '/assets/triangle.svg 600w',
-    '/assets/hexagon.svg 900w',
-    '/assets/heart.svg 1200w'
+    '/assets/text.svg 800w',
+    '/assets/heart.svg 1000w',
+    '/assets/hexagon.svg 1200w'
 ];
 
 const $svg1 = document.createElement('svg-isolate');
